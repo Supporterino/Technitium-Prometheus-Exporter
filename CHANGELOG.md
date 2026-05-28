@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.2](https://github.com/Supporterino/Technitium-Prometheus-Exporter/compare/v1.0.1...v1.0.2) (2026-05-28)
+
+
+### Bug Fixes
+
+* **build:** 🐛 Lower go directive to 1.24.0 for CI compatibility ([093549a](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/093549abd0cf45f0675bff55d4b67a4f1c3f5d62))
+* **build:** 🐛 Lower go directive to 1.24.0 for CI compatibility ([207aa73](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/207aa73def1f7f0719f04c0e1b947890d01360fe))
+
 ## [1.0.1](https://github.com/Supporterino/Technitium-Prometheus-Exporter/compare/v1.0.0...v1.0.1) (2026-05-28)
 
 
