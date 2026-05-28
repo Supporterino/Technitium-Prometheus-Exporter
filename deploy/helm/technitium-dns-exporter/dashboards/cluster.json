@@ -1,0 +1,63 @@
+{
+  "annotations": { "list": [ { "builtIn": 1, "datasource": { "type": "grafana", "uid": "-- Grafana --" }, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard" } ] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }, "id": 100, "panels": [], "title": "Cluster Nodes", "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [ { "options": { "0": { "color": "red", "text": "Unreachable" }, "1": { "color": "green", "text": "Connected" }, "2": { "color": "blue", "text": "Self" } }, "type": "value" } ], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "none" } },
+      "gridPos": { "h": 12, "w": 12, "x": 0, "y": 1 }, "id": 1,
+      "options": { "showHeader": true },
+      "targets": [ { "expr": "technitium_dns_cluster_node_state{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{node}}", "refId": "A", "format": "table", "instant": true } ],
+      "title": "Node State", "type": "table"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text", "axisPlacement": "auto", "drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "smooth", "lineWidth": 1, "pointSize": 5, "showPoints": "never", "spanNulls": false, "stacking": { "group": "A", "mode": "none" } }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "reqps" } },
+      "gridPos": { "h": 12, "w": 12, "x": 12, "y": 1 }, "id": 2,
+      "options": { "legend": { "calcs": [], "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
+      "targets": [ { "expr": "rate(technitium_dns_queries_total{instance=~\"$target\",job=~\"$job\"}[$__rate_interval])", "legendFormat": "{{instance}} - QPS", "refId": "A" } ],
+      "title": "Queries Per Second Per Node", "type": "timeseries"
+    },
+    {
+      "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 13 }, "id": 101, "panels": [], "title": "Cluster Config", "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "s" } },
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 14 }, "id": 3,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [ { "expr": "technitium_dns_cluster_heartbeat_interval_seconds{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" } ],
+      "title": "Heartbeat Interval", "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "short" } },
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 14 }, "id": 4,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [ { "expr": "count(technitium_dns_cluster_node_state{instance=~\"$target\",job=~\"$job\"})", "legendFormat": "{{instance}}", "refId": "A" } ],
+      "title": "Node Count", "type": "stat"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["technitium", "dns", "cluster"],
+  "templating": {
+    "list": [
+      { "current": { "selected": false, "text": "default", "value": "default" }, "hide": 0, "includeAll": false, "label": "Datasource", "name": "datasource", "options": [], "query": "prometheus", "refresh": 1, "type": "datasource" },
+      { "current": { "selected": false, "text": "All", "value": "$__all" }, "datasource": { "type": "prometheus", "uid": "${datasource}" }, "definition": "label_values(technitium_dns_cluster_node_state, instance)", "hide": 0, "includeAll": true, "label": "Target", "multi": false, "name": "target", "options": [], "query": { "query": "label_values(technitium_dns_cluster_node_state, instance)", "refId": "target_var" }, "refresh": 1, "type": "query" },
+      { "current": { "selected": false, "text": "All", "value": "$__all" }, "datasource": { "type": "prometheus", "uid": "${datasource}" }, "definition": "label_values(technitium_dns_cluster_node_state, job)", "hide": 0, "includeAll": true, "label": "Job", "multi": false, "name": "job", "options": [], "query": { "query": "label_values(technitium_dns_cluster_node_state, job)", "refId": "job_var" }, "refresh": 1, "type": "query" }
+    ]
+  },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Cluster Health",
+  "uid": "technitium-dns-cluster",
+  "version": 1
+}
