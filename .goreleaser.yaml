@@ -31,11 +31,6 @@ archives:
 checksum:
   name_template: 'checksums.txt'
 
-sboms:
-  - artifacts: archive
-    documents:
-      - '{{ .ProjectName }}_{{ .Version }}_sbom.spdx.json'
-
 dockers:
   - image_templates:
       - 'ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .Tag }}'
