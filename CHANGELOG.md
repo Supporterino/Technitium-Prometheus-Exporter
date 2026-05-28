@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.5](https://github.com/Supporterino/Technitium-Prometheus-Exporter/compare/v1.0.4...v1.0.5) (2026-05-28)
+
+
+### Bug Fixes
+
+* **build:** 🐛 Fix docker build — remove multi-platform flag, use gore… ([d41f2cd](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/d41f2cdb009065061ad3f092b391c3d4154078aa))
+* **build:** 🐛 Fix docker build — remove multi-platform flag, use goreleaser binary ([fd20c1e](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/fd20c1ef24b72f1eb33d3536ef8bd03eeba2c57d))
+
 ## [1.0.4](https://github.com/Supporterino/Technitium-Prometheus-Exporter/compare/v1.0.3...v1.0.4) (2026-05-28)
 
 
