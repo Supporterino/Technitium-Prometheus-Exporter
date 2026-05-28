@@ -16,6 +16,6 @@ jobs:
       - uses: actions/checkout@v6
       - uses: googleapis/release-please-action@v5
         with:
-          release-type: simple
+          config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
