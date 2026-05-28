@@ -12,6 +12,6 @@ metadata:
     {{ $.Values.grafana.dashboards.label }}: {{ $.Values.grafana.dashboards.labelValue | quote }}
 data:
   {{ base $path }}: |
-    {{- $content | nindent 4 }}
+    {{- $content | toString | nindent 4 }}
 {{- end }}
 {{- end }}

@@ -167,6 +167,174 @@
       ],
       "title": "Scrape Duration",
       "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 24 },
+      "id": 102,
+      "panels": [],
+      "title": "Server Info",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "s" } },
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 25 },
+      "id": 9,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [
+        { "expr": "technitium_dns_uptime_seconds{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" }
+      ],
+      "title": "Uptime",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "none" } },
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 25 },
+      "id": 10,
+      "options": { "showHeader": true, "sortBy": [] },
+      "targets": [
+        { "expr": "technitium_dns_version_info{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{version}}", "refId": "A", "format": "table", "instant": true }
+      ],
+      "title": "Version",
+      "type": "table"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [ { "options": { "0": { "color": "red", "text": "Disabled" }, "1": { "color": "green", "text": "Enabled" } }, "type": "value" } ], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "none" } },
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 25 },
+      "id": 11,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [
+        { "expr": "technitium_dns_dnssec_validation_enabled{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" }
+      ],
+      "title": "DNSSEC Validation",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 31 },
+      "id": 103,
+      "panels": [],
+      "title": "Protocols",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [ { "options": { "0": { "color": "red", "text": "Disabled" }, "1": { "color": "green", "text": "Enabled" } }, "type": "value" } ], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "none" } },
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 32 },
+      "id": 12,
+      "options": { "showHeader": true, "sortBy": [] },
+      "targets": [
+        { "expr": "technitium_dns_protocol_enabled{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{protocol}}", "refId": "A", "format": "table", "instant": true }
+      ],
+      "title": "Protocols Enabled",
+      "type": "table"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "none" } },
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 32 },
+      "id": 13,
+      "options": { "showHeader": true, "sortBy": [] },
+      "targets": [
+        { "expr": "technitium_dns_protocol_port{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{protocol}}", "refId": "A", "format": "table", "instant": true }
+      ],
+      "title": "Protocol Ports",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 42 },
+      "id": 104,
+      "panels": [],
+      "title": "DNS Settings",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [ { "options": { "0": { "color": "red", "text": "Disabled" }, "1": { "color": "green", "text": "Enabled" } }, "type": "value" } ], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "none" } },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 43 },
+      "id": 14,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [
+        { "expr": "technitium_dns_randomize_name_enabled{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" }
+      ],
+      "title": "Randomize Name",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [ { "options": { "0": { "color": "red", "text": "Disabled" }, "1": { "color": "green", "text": "Enabled" } }, "type": "value" } ], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "none" } },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 43 },
+      "id": 15,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [
+        { "expr": "technitium_dns_qname_minimization_enabled{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" }
+      ],
+      "title": "QNAME Minimization",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [ { "options": { "0": { "color": "red", "text": "Disabled" }, "1": { "color": "green", "text": "Enabled" } }, "type": "value" } ], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "none" } },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 43 },
+      "id": 16,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [
+        { "expr": "technitium_dns_edns_client_subnet_enabled{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" }
+      ],
+      "title": "EDNS Client Subnet",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [ { "options": { "0": { "color": "red", "text": "Disabled" }, "1": { "color": "green", "text": "Enabled" } }, "type": "value" } ], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "none" } },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 43 },
+      "id": 17,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [
+        { "expr": "technitium_dns_ipv6_prefer_enabled{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" }
+      ],
+      "title": "Prefer IPv6",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [ { "options": { "0": { "color": "red", "text": "Disabled" }, "1": { "color": "green", "text": "Enabled" } }, "type": "value" } ], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "none" } },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 47 },
+      "id": 18,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [
+        { "expr": "technitium_dns_udp_socket_pool_enabled{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" }
+      ],
+      "title": "UDP Socket Pool",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [ { "options": { "0": { "color": "red", "text": "Disabled" }, "1": { "color": "green", "text": "Enabled" } }, "type": "value" } ], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "none" } },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 47 },
+      "id": 19,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [
+        { "expr": "technitium_dns_in_memory_stats_enabled{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" }
+      ],
+      "title": "In-Memory Stats",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [ { "options": { "0": { "color": "red", "text": "Disabled" }, "1": { "color": "green", "text": "Enabled" } }, "type": "value" } ], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "none" } },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 47 },
+      "id": 20,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [
+        { "expr": "technitium_dns_apps_auto_update_enabled{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" }
+      ],
+      "title": "Apps Auto Update",
+      "type": "stat"
     }
   ],
   "refresh": "30s",

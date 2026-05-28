@@ -42,6 +42,36 @@
       "options": { "showHeader": true, "sortBy": [] },
       "targets": [ { "expr": "technitium_dns_zone_expiry_timestamp_seconds{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{zone}}", "refId": "A", "format": "table", "instant": true } ],
       "title": "Zone Expiry", "type": "table"
+    },
+    {
+      "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 24 }, "id": 102, "panels": [], "title": "Zone Health", "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "inspect": false }, "mappings": [ { "options": { "0": { "color": "green", "text": "OK" }, "1": { "color": "red", "text": "ERROR" } }, "type": "value" } ], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "short" } },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 25 }, "id": 5,
+      "options": { "showHeader": true, "sortBy": [] },
+      "targets": [
+        { "expr": "technitium_dns_zone_disabled{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{zone}} - Disabled", "refId": "A", "format": "table", "instant": true },
+        { "expr": "technitium_dns_zone_expired{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{zone}} - Expired", "refId": "B", "format": "table", "instant": true },
+        { "expr": "technitium_dns_zone_sync_failed{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{zone}} - Sync Failed", "refId": "C", "format": "table", "instant": true },
+        { "expr": "technitium_dns_zone_notify_failed{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{zone}} - Notify Failed", "refId": "D", "format": "table", "instant": true },
+        { "expr": "technitium_dns_zone_internal{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{zone}} - Internal", "refId": "E", "format": "table", "instant": true }
+      ],
+      "title": "Zone State",
+      "type": "table"
+    },
+    {
+      "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 37 }, "id": 103, "panels": [], "title": "SOA Serials", "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "inspect": false }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "none" } },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 38 }, "id": 6,
+      "options": { "showHeader": true, "sortBy": [ { "desc": true, "displayName": "Value" } ] },
+      "targets": [ { "expr": "technitium_dns_zone_soa_serial{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{zone}}", "refId": "A", "format": "table", "instant": true } ],
+      "title": "SOA Serial by Zone",
+      "type": "table"
     }
   ],
   "refresh": "30s",

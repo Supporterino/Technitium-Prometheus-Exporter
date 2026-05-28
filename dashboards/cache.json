@@ -74,6 +74,68 @@
       "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
       "targets": [ { "expr": "technitium_dns_cache_serve_stale_enabled{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" } ],
       "title": "Serve Stale Enabled", "type": "stat"
+    },
+    {
+      "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 26 }, "id": 102, "panels": [], "title": "Cache TTL Config", "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "s" } },
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 27 }, "id": 9,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [ { "expr": "technitium_dns_cache_min_record_ttl_seconds{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" } ],
+      "title": "Min Record TTL", "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "s" } },
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 27 }, "id": 10,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [ { "expr": "technitium_dns_cache_max_record_ttl_seconds{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" } ],
+      "title": "Max Record TTL", "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "s" } },
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 27 }, "id": 11,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [ { "expr": "technitium_dns_cache_negative_record_ttl_seconds{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" } ],
+      "title": "Negative TTL", "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "s" } },
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 27 }, "id": 12,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [ { "expr": "technitium_dns_cache_failure_record_ttl_seconds{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" } ],
+      "title": "Failure TTL", "type": "stat"
+    },
+    {
+      "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 33 }, "id": 103, "panels": [], "title": "Prefetch & Serve Stale", "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "none" } },
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 34 }, "id": 13,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [ { "expr": "technitium_dns_cache_prefetch_eligibility{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" } ],
+      "title": "Prefetch Eligibility", "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "s" } },
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 34 }, "id": 14,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [ { "expr": "technitium_dns_cache_prefetch_trigger_seconds{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" } ],
+      "title": "Prefetch Trigger", "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "s" } },
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 34 }, "id": 15,
+      "options": { "showHeader": true, "sortBy": [] },
+      "targets": [ { "expr": "technitium_dns_cache_serve_stale_ttl_seconds{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{type}}", "refId": "A", "format": "table", "instant": true } ],
+      "title": "Serve Stale TTL Config", "type": "table"
     }
   ],
   "refresh": "30s",

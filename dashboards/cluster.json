@@ -30,18 +30,50 @@
     {
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "s" } },
-      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 14 }, "id": 3,
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 14 }, "id": 3,
       "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
       "targets": [ { "expr": "technitium_dns_cluster_heartbeat_interval_seconds{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" } ],
       "title": "Heartbeat Interval", "type": "stat"
     },
     {
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "s" } },
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 14 }, "id": 5,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [ { "expr": "technitium_dns_cluster_heartbeat_retry_interval_seconds{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" } ],
+      "title": "Heartbeat Retry", "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "s" } },
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 14 }, "id": 6,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [ { "expr": "technitium_dns_cluster_config_refresh_interval_seconds{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" } ],
+      "title": "Config Refresh", "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "s" } },
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 14 }, "id": 7,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [ { "expr": "technitium_dns_cluster_config_retry_interval_seconds{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" } ],
+      "title": "Config Retry", "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "short" } },
-      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 14 }, "id": 4,
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 20 }, "id": 4,
       "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
       "targets": [ { "expr": "count(technitium_dns_cluster_node_state{instance=~\"$target\",job=~\"$job\"})", "legendFormat": "{{instance}}", "refId": "A" } ],
       "title": "Node Count", "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "custom": { "align": "auto" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "dateTimeAsLocal" } },
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 20 }, "id": 8,
+      "options": { "showHeader": true },
+      "targets": [ { "expr": "technitium_dns_cluster_config_last_synced_timestamp_seconds{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A", "format": "table", "instant": true } ],
+      "title": "Config Last Synced", "type": "table"
     }
   ],
   "refresh": "30s",

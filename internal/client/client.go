@@ -219,6 +219,7 @@ type Zone struct {
 	Expiry       string `json:"expiry"`
 	IsExpired    bool   `json:"isExpired"`
 	SyncFailed   bool   `json:"syncFailed"`
+	NotifyFailed bool   `json:"notifyFailed"`
 	LastModified string `json:"lastModified"`
 	Disabled     bool   `json:"disabled"`
 	Internal     bool   `json:"internal"`
@@ -242,28 +243,87 @@ func (c *APIClient) GetZones(ctx context.Context) ([]Zone, error) {
 
 // DNSSettings represents settings from /api/settings/get
 type DNSSettings struct {
-	Version                      string              `json:"version"`
-	Uptimestamp                  string              `json:"uptimestamp"`
-	ClusterInitialized           bool                `json:"clusterInitialized"`
-	DNSOverUDPEnabled            bool                `json:"enableDnsOverUdpProxy"`
-	DNSOverTCPEnabled            bool                `json:"enableDnsOverTcpProxy"`
-	DNSOverTLSEnabled            bool                `json:"enableDnsOverTls"`
-	DNSOverHTTPSEnabled          bool                `json:"enableDnsOverHttps"`
-	DNSOverHTTPEnabled           bool                `json:"enableDnsOverHttp"`
-	DNSOverQUICEnabled           bool                `json:"enableDnsOverQuic"`
-	DNSOverHTTP3Enabled          bool                `json:"enableDnsOverHttp3"`
-	Recursion                    string              `json:"recursion"`
-	EnableBlocking               bool                `json:"enableBlocking"`
-	BlockListNextUpdatedOn       string              `json:"blockListNextUpdatedOn"`
-	BlockListUpdateIntervalHours int64               `json:"blockListUpdateIntervalHours"`
-	CacheMaximumEntries          int64               `json:"cacheMaximumEntries"`
-	Forwarders                   []string            `json:"forwarders"`
-	ForwarderProtocol            string              `json:"forwarderProtocol"`
-	SaveCache                    bool                `json:"saveCache"`
-	ServeStale                   bool                `json:"serveStale"`
-	DHCPServerEnabled            bool                `json:"dhcpServerEnabled"`
-	QPMPrefixLimitsIPv4          []QPMPrefixLimit    `json:"qpmPrefixLimitsIPv4"`
-	QPMPrefixLimitsIPv6          []QPMPrefixLimit    `json:"qpmPrefixLimitsIPv6"`
+	Version                      string           `json:"version"`
+	Uptimestamp                  string           `json:"uptimestamp"`
+	ClusterInitialized           bool             `json:"clusterInitialized"`
+	DNSOverUDPEnabled            bool             `json:"enableDnsOverUdpProxy"`
+	DNSOverTCPEnabled            bool             `json:"enableDnsOverTcpProxy"`
+	DNSOverTLSEnabled            bool             `json:"enableDnsOverTls"`
+	DNSOverHTTPSEnabled          bool             `json:"enableDnsOverHttps"`
+	DNSOverHTTPEnabled           bool             `json:"enableDnsOverHttp"`
+	DNSOverQUICEnabled           bool             `json:"enableDnsOverQuic"`
+	DNSOverHTTP3Enabled          bool             `json:"enableDnsOverHttp3"`
+	Recursion                    string           `json:"recursion"`
+	EnableBlocking               bool             `json:"enableBlocking"`
+	AllowTXTBlockingReport       bool             `json:"allowTxtBlockingReport"`
+	BlockingType                 string           `json:"blockingType"`
+	BlockingAnswerTTL            int64            `json:"blockingAnswerTtl"`
+	BlockListNextUpdatedOn       string           `json:"blockListNextUpdatedOn"`
+	BlockListUpdateIntervalHours int64            `json:"blockListUpdateIntervalHours"`
+	CacheMaximumEntries          int64            `json:"cacheMaximumEntries"`
+	CacheMinimumRecordTTL        int64            `json:"cacheMinimumRecordTtl"`
+	CacheMaximumRecordTTL        int64            `json:"cacheMaximumRecordTtl"`
+	CacheNegativeRecordTTL       int64            `json:"cacheNegativeRecordTtl"`
+	CacheFailureRecordTTL        int64            `json:"cacheFailureRecordTtl"`
+	CachePrefetchEligibility     int64            `json:"cachePrefetchEligibility"`
+	CachePrefetchTrigger         int64            `json:"cachePrefetchTrigger"`
+	SaveCache                    bool             `json:"saveCache"`
+	ServeStale                   bool             `json:"serveStale"`
+	ServeStaleTTL                int64            `json:"serveStaleTtl"`
+	ServeStaleAnswerTTL          int64            `json:"serveStaleAnswerTtl"`
+	ServeStaleResetTTL           int64            `json:"serveStaleResetTtl"`
+	ServeStaleMaxWaitTime        int64            `json:"serveStaleMaxWaitTime"`
+	DefaultRecordTTL             int64            `json:"defaultRecordTtl"`
+	DefaultNsRecordTTL           int64            `json:"defaultNsRecordTtl"`
+	DefaultSoaRecordTTL          int64            `json:"defaultSoaRecordTtl"`
+	DNSSECValidation             bool             `json:"dnssecValidation"`
+	IPv6Mode                     string           `json:"ipv6Mode"`
+	PreferIPv6                   bool             `json:"preferIPv6"`
+	RandomizeName                bool             `json:"randomizeName"`
+	QNameMinimization            bool             `json:"qnameMinimization"`
+	EDNSClientSubnet             bool             `json:"eDnsClientSubnet"`
+	EDNSClientSubnetIPv4Prefix   int64            `json:"eDnsClientSubnetIPv4PrefixLength"`
+	EDNSClientSubnetIPv6Prefix   int64            `json:"eDnsClientSubnetIPv6PrefixLength"`
+	UDPPayloadSize               int64            `json:"udpPayloadSize"`
+	EnableUDPSocketPool          bool             `json:"enableUdpSocketPool"`
+	UDPSendBufferSizeKB          int64            `json:"udpSendBufferSizeKB"`
+	UDPReceiveBufferSizeKB       int64            `json:"udpReceiveBufferSizeKB"`
+	ClientTimeout                int64            `json:"clientTimeout"`
+	TCPSendTimeout               int64            `json:"tcpSendTimeout"`
+	TCPReceiveTimeout            int64            `json:"tcpReceiveTimeout"`
+	ListenBacklog                int64            `json:"listenBacklog"`
+	MaxConcurrentResolutions     int64            `json:"maxConcurrentResolutionsPerCore"`
+	ResolverRetries              int64            `json:"resolverRetries"`
+	ResolverTimeout              int64            `json:"resolverTimeout"`
+	ResolverConcurrency          int64            `json:"resolverConcurrency"`
+	ResolverMaxStackCount        int64            `json:"resolverMaxStackCount"`
+	ConcurrentForwarding         bool             `json:"concurrentForwarding"`
+	ForwarderRetries             int64            `json:"forwarderRetries"`
+	ForwarderTimeout             int64            `json:"forwarderTimeout"`
+	ForwarderConcurrency         int64            `json:"forwarderConcurrency"`
+	Forwarders                   []string         `json:"forwarders"`
+	ForwarderProtocol            string           `json:"forwarderProtocol"`
+	EnableLogging                bool             `json:"enableLogging"`
+	LogQueries                   bool             `json:"logQueries"`
+	UseLocalTime                 bool             `json:"useLocalTime"`
+	MaxLogFileDays               int64            `json:"maxLogFileDays"`
+	EnableInMemoryStats          bool             `json:"enableInMemoryStats"`
+	MaxStatFileDays              int64            `json:"maxStatFileDays"`
+	DNSAppsAutoUpdate            bool             `json:"dnsAppsEnableAutomaticUpdate"`
+	WebServiceHTTPPort           int64            `json:"webServiceHttpPort"`
+	WebServiceTLSEnabled         bool             `json:"webServiceEnableTls"`
+	WebServiceTLSPort            int64            `json:"webServiceTlsPort"`
+	DNSOverUDPProxyPort          int64            `json:"dnsOverUdpProxyPort"`
+	DNSOverTCPProxyPort          int64            `json:"dnsOverTcpProxyPort"`
+	DNSOverHTTPPort              int64            `json:"dnsOverHttpPort"`
+	DNSOverTLSPort               int64            `json:"dnsOverTlsPort"`
+	DNSOverHTTPSPort             int64            `json:"dnsOverHttpsPort"`
+	DNSOverQUICPort              int64            `json:"dnsOverQuicPort"`
+	QPMLimitSampleMinutes        int64            `json:"qpmLimitSampleMinutes"`
+	QPMLimitUDPTruncationPct     int64            `json:"qpmLimitUdpTruncationPercentage"`
+	DHCPServerEnabled            bool             `json:"dhcpServerEnabled"`
+	QPMPrefixLimitsIPv4          []QPMPrefixLimit `json:"qpmPrefixLimitsIPv4"`
+	QPMPrefixLimitsIPv6          []QPMPrefixLimit `json:"qpmPrefixLimitsIPv6"`
 }
 
 type QPMPrefixLimit struct {

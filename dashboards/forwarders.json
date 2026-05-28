@@ -55,6 +55,89 @@
       "options": { "showHeader": true },
       "targets": [ { "expr": "technitium_dns_blocklist_next_update_timestamp_seconds{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A", "format": "table", "instant": true } ],
       "title": "Next Blocklist Update", "type": "table"
+    },
+    {
+      "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 17 }, "id": 101, "panels": [], "title": "Blocking Config", "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "none" } },
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 18 }, "id": 7,
+      "options": { "showHeader": true, "sortBy": [] },
+      "targets": [ { "expr": "technitium_dns_blocking_type{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{type}}", "refId": "A", "format": "table", "instant": true } ],
+      "title": "Blocking Type", "type": "table"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "s" } },
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 18 }, "id": 8,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [ { "expr": "technitium_dns_blocking_answer_ttl_seconds{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" } ],
+      "title": "Blocking Answer TTL", "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "hours" } },
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 18 }, "id": 9,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [ { "expr": "technitium_dns_blocklist_update_interval_hours{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" } ],
+      "title": "Update Interval", "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [ { "options": { "0": { "color": "red", "text": "Disabled" }, "1": { "color": "green", "text": "Enabled" } }, "type": "value" } ], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "none" } },
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 18 }, "id": 10,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [ { "expr": "technitium_dns_allow_txt_blocking_report_enabled{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" } ],
+      "title": "TXT Blocking Report",
+      "type": "stat"
+    },
+    {
+      "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 24 }, "id": 102, "panels": [], "title": "Forwarder Config", "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [ { "options": { "0": { "color": "red", "text": "Disabled" }, "1": { "color": "green", "text": "Enabled" } }, "type": "value" } ], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "none" } },
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 25 }, "id": 11,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [ { "expr": "technitium_dns_concurrent_forwarding_enabled{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" } ],
+      "title": "Concurrent Forwarding", "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "none" } },
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 25 }, "id": 12,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [ { "expr": "technitium_dns_forwarder_retries{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" } ],
+      "title": "Forwarder Retries", "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "s" } },
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 25 }, "id": 13,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [ { "expr": "technitium_dns_forwarder_timeout_seconds{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" } ],
+      "title": "Forwarder Timeout", "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "none" } },
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 25 }, "id": 14,
+      "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
+      "targets": [ { "expr": "technitium_dns_forwarder_concurrency{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{instance}}", "refId": "A" } ],
+      "title": "Forwarder Concurrency", "type": "stat"
+    },
+    {
+      "collapsed": false, "gridPos": { "h": 1, "w": 24, "x": 0, "y": 31 }, "id": 103, "panels": [], "title": "Forwarders List", "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "custom": { "align": "auto" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "none" } },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 32 }, "id": 15,
+      "options": { "showHeader": true, "sortBy": [] },
+      "targets": [ { "expr": "technitium_dns_forwarder_info{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{address}}", "refId": "A", "format": "table", "instant": true } ],
+      "title": "Configured Forwarders",
+      "type": "table"
     }
   ],
   "refresh": "30s",
