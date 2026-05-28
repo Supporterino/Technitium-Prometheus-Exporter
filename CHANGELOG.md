@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.3](https://github.com/Supporterino/Technitium-Prometheus-Exporter/compare/v1.0.2...v1.0.3) (2026-05-28)
+
+
+### Bug Fixes
+
+* **build:** 🐛 Remove SBOM generation to fix goreleaser syft dependency ([bcb6d7e](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/bcb6d7e4fe0dccfa7f0ff764d281a5ab105f4d51))
+* **build:** 🐛 Remove SBOM generation to fix goreleaser syft dependency ([8494004](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/8494004979475d224cd93ec155cd0a09173cb90e))
+
 ## [1.0.2](https://github.com/Supporterino/Technitium-Prometheus-Exporter/compare/v1.0.1...v1.0.2) (2026-05-28)
 
 
