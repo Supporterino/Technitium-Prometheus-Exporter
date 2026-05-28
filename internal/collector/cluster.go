@@ -22,14 +22,14 @@ func (c *TechnitiumCollector) collectCluster(ctx context.Context, ch chan<- prom
 		return
 	}
 
-	ch <- prometheus.MustNewConstMetric(c.descHeartbeatInterval, prometheus.GaugeValue, float64(state.HeartbeatRefreshInterval))
-	ch <- prometheus.MustNewConstMetric(c.descClusterHeartbeatRetryInterval, prometheus.GaugeValue, float64(state.HeartbeatRetryInterval))
-	ch <- prometheus.MustNewConstMetric(c.descClusterConfigRefreshInterval, prometheus.GaugeValue, float64(state.ConfigRefreshInterval))
-	ch <- prometheus.MustNewConstMetric(c.descClusterConfigRetryInterval, prometheus.GaugeValue, float64(state.ConfigRetryInterval))
+	emitGauge(ch, c.descHeartbeatInterval, float64(state.HeartbeatRefreshInterval))
+	emitGauge(ch, c.descClusterHeartbeatRetryInterval, float64(state.HeartbeatRetryInterval))
+	emitGauge(ch, c.descClusterConfigRefreshInterval, float64(state.ConfigRefreshInterval))
+	emitGauge(ch, c.descClusterConfigRetryInterval, float64(state.ConfigRetryInterval))
 
 	if state.ConfigLastSynced != "" {
 		if lastSynced, err := time.Parse(time.RFC3339Nano, state.ConfigLastSynced); err == nil {
-			ch <- prometheus.MustNewConstMetric(c.descClusterConfigLastSynced, prometheus.GaugeValue, float64(lastSynced.Unix()))
+			emitGauge(ch, c.descClusterConfigLastSynced, float64(lastSynced.Unix()))
 		}
 	}
 
@@ -41,7 +41,7 @@ func (c *TechnitiumCollector) collectCluster(ctx context.Context, ch chan<- prom
 		case "Self":
 			stateValue = 2
 		}
-		ch <- prometheus.MustNewConstMetric(c.descClusterNodeState, prometheus.GaugeValue, stateValue,
+		emitGauge(ch, c.descClusterNodeState, stateValue,
 			node.Name, node.Type, node.IPAddress,
 		)
 	}

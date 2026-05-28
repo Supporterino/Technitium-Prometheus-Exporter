@@ -18,6 +18,9 @@ type TechnitiumCollector struct {
 	logger  *slog.Logger
 	timeout time.Duration
 
+	descs         []*prometheus.Desc
+	subCollectors []func(context.Context, chan<- prometheus.Metric)
+
 	descScrapeSuccess  *prometheus.Desc
 	descScrapeDuration *prometheus.Desc
 
@@ -124,7 +127,7 @@ func New(target config.Target, timeout time.Duration, logger *slog.Logger) *Tech
 	labels := target.Labels
 	labels["instance"] = target.Name
 
-	return &TechnitiumCollector{
+	c := &TechnitiumCollector{
 		client:  apiClient,
 		target:  target,
 		logger:  logger,
@@ -602,102 +605,118 @@ func New(target config.Target, timeout time.Duration, logger *slog.Logger) *Tech
 			[]string{"version"}, labels,
 		),
 	}
+
+	c.subCollectors = []func(context.Context, chan<- prometheus.Metric){
+		c.collectDashboardStats,
+		c.collectZones,
+		c.collectSettingsStats,
+		c.collectDHCP,
+		c.collectCluster,
+	}
+
+	c.descs = []*prometheus.Desc{
+		c.descScrapeSuccess,
+		c.descScrapeDuration,
+		c.descQueryTotal,
+		c.descQueryNoError,
+		c.descQueryServFail,
+		c.descQueryNXDomain,
+		c.descQueryRefused,
+		c.descQueryAuth,
+		c.descQueryRecursive,
+		c.descQueryCached,
+		c.descQueryBlocked,
+		c.descQueryDropped,
+		c.descTotalClients,
+		c.descCachedEntries,
+		c.descZones,
+		c.descAllowedZones,
+		c.descBlockedZones,
+		c.descAllowListZones,
+		c.descBlockListZones,
+		c.descZoneInfo,
+		c.descZoneExpiryTimestamp,
+		c.descZoneDisabled,
+		c.descZoneExpired,
+		c.descZoneSyncFailed,
+		c.descZoneNotifyFailed,
+		c.descZoneInternal,
+		c.descZoneSOASerial,
+		c.descDHCPLeases,
+		c.descDHCPLeasesByType,
+		c.descDHCPScopeEnabled,
+		c.descClusterNodeState,
+		c.descHeartbeatInterval,
+		c.descClusterHeartbeatRetryInterval,
+		c.descClusterConfigRefreshInterval,
+		c.descClusterConfigRetryInterval,
+		c.descClusterConfigLastSynced,
+		c.descCacheMaxEntries,
+		c.descCacheSaveEnabled,
+		c.descCacheServeStaleEnabled,
+		c.descCacheMinRecordTTL,
+		c.descCacheMaxRecordTTL,
+		c.descCacheNegativeRecordTTL,
+		c.descCacheFailureRecordTTL,
+		c.descCachePrefetchEligibility,
+		c.descCachePrefetchTrigger,
+		c.descServeStaleConfig,
+		c.descBlockingEnabled,
+		c.descBlockListUpdateInterval,
+		c.descBlockListNextUpdate,
+		c.descBlockingType,
+		c.descBlockingAnswerTTL,
+		c.descAllowTXTBlockingReport,
+		c.descForwardersCount,
+		c.descForwarderInfo,
+		c.descProtocolEnabled,
+		c.descProtocolPort,
+		c.descDefaultTTL,
+		c.descDNSSECValidationEnabled,
+		c.descIPv6PreferEnabled,
+		c.descIPv6Mode,
+		c.descRandomizeNameEnabled,
+		c.descQNameMinimizationEnabled,
+		c.descEDNSClientSubnetEnabled,
+		c.descEDNSClientSubnetPrefix,
+		c.descUDPPayloadSize,
+		c.descUDPSocketPoolEnabled,
+		c.descUDPBufferSizeKB,
+		c.descClientTimeout,
+		c.descTCPSendTimeout,
+		c.descTCPReceiveTimeout,
+		c.descListenBacklog,
+		c.descMaxConcurrentResolutions,
+		c.descResolverRetries,
+		c.descResolverTimeout,
+		c.descResolverConcurrency,
+		c.descResolverMaxStackCount,
+		c.descConcurrentForwarding,
+		c.descForwarderRetries,
+		c.descForwarderTimeout,
+		c.descForwarderConcurrency,
+		c.descLogEnabled,
+		c.descLogUseLocalTime,
+		c.descMaxLogFileDays,
+		c.descInMemoryStatsEnabled,
+		c.descMaxStatFileDays,
+		c.descDNSAppsAutoUpdateEnabled,
+		c.descWebServiceHTTPPort,
+		c.descWebServiceTLSEnabled,
+		c.descWebServiceTLSPort,
+		c.descQPMLimitSampleMinutes,
+		c.descQPMLimitUDPTruncationPct,
+		c.descUptimeSeconds,
+		c.descVersionInfo,
+	}
+
+	return c
 }
 
 func (c *TechnitiumCollector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- c.descScrapeSuccess
-	ch <- c.descScrapeDuration
-	ch <- c.descQueryTotal
-	ch <- c.descQueryNoError
-	ch <- c.descQueryServFail
-	ch <- c.descQueryNXDomain
-	ch <- c.descQueryRefused
-	ch <- c.descQueryAuth
-	ch <- c.descQueryRecursive
-	ch <- c.descQueryCached
-	ch <- c.descQueryBlocked
-	ch <- c.descQueryDropped
-	ch <- c.descTotalClients
-	ch <- c.descCachedEntries
-	ch <- c.descZones
-	ch <- c.descAllowedZones
-	ch <- c.descBlockedZones
-	ch <- c.descAllowListZones
-	ch <- c.descBlockListZones
-	ch <- c.descZoneInfo
-	ch <- c.descZoneExpiryTimestamp
-	ch <- c.descZoneDisabled
-	ch <- c.descZoneExpired
-	ch <- c.descZoneSyncFailed
-	ch <- c.descZoneNotifyFailed
-	ch <- c.descZoneInternal
-	ch <- c.descZoneSOASerial
-	ch <- c.descDHCPLeases
-	ch <- c.descDHCPLeasesByType
-	ch <- c.descDHCPScopeEnabled
-	ch <- c.descClusterNodeState
-	ch <- c.descHeartbeatInterval
-	ch <- c.descClusterHeartbeatRetryInterval
-	ch <- c.descClusterConfigRefreshInterval
-	ch <- c.descClusterConfigRetryInterval
-	ch <- c.descClusterConfigLastSynced
-	ch <- c.descCacheMaxEntries
-	ch <- c.descCacheSaveEnabled
-	ch <- c.descCacheServeStaleEnabled
-	ch <- c.descCacheMinRecordTTL
-	ch <- c.descCacheMaxRecordTTL
-	ch <- c.descCacheNegativeRecordTTL
-	ch <- c.descCacheFailureRecordTTL
-	ch <- c.descCachePrefetchEligibility
-	ch <- c.descCachePrefetchTrigger
-	ch <- c.descServeStaleConfig
-	ch <- c.descBlockingEnabled
-	ch <- c.descBlockListUpdateInterval
-	ch <- c.descBlockListNextUpdate
-	ch <- c.descBlockingType
-	ch <- c.descBlockingAnswerTTL
-	ch <- c.descAllowTXTBlockingReport
-	ch <- c.descForwardersCount
-	ch <- c.descForwarderInfo
-	ch <- c.descProtocolEnabled
-	ch <- c.descProtocolPort
-	ch <- c.descDefaultTTL
-	ch <- c.descDNSSECValidationEnabled
-	ch <- c.descIPv6PreferEnabled
-	ch <- c.descIPv6Mode
-	ch <- c.descRandomizeNameEnabled
-	ch <- c.descQNameMinimizationEnabled
-	ch <- c.descEDNSClientSubnetEnabled
-	ch <- c.descEDNSClientSubnetPrefix
-	ch <- c.descUDPPayloadSize
-	ch <- c.descUDPSocketPoolEnabled
-	ch <- c.descUDPBufferSizeKB
-	ch <- c.descClientTimeout
-	ch <- c.descTCPSendTimeout
-	ch <- c.descTCPReceiveTimeout
-	ch <- c.descListenBacklog
-	ch <- c.descMaxConcurrentResolutions
-	ch <- c.descResolverRetries
-	ch <- c.descResolverTimeout
-	ch <- c.descResolverConcurrency
-	ch <- c.descResolverMaxStackCount
-	ch <- c.descConcurrentForwarding
-	ch <- c.descForwarderRetries
-	ch <- c.descForwarderTimeout
-	ch <- c.descForwarderConcurrency
-	ch <- c.descLogEnabled
-	ch <- c.descLogUseLocalTime
-	ch <- c.descMaxLogFileDays
-	ch <- c.descInMemoryStatsEnabled
-	ch <- c.descMaxStatFileDays
-	ch <- c.descDNSAppsAutoUpdateEnabled
-	ch <- c.descWebServiceHTTPPort
-	ch <- c.descWebServiceTLSEnabled
-	ch <- c.descWebServiceTLSPort
-	ch <- c.descQPMLimitSampleMinutes
-	ch <- c.descQPMLimitUDPTruncationPct
-	ch <- c.descUptimeSeconds
-	ch <- c.descVersionInfo
+	for _, d := range c.descs {
+		ch <- d
+	}
 }
 
 func (c *TechnitiumCollector) Collect(ch chan<- prometheus.Metric) {
@@ -709,15 +728,7 @@ func (c *TechnitiumCollector) Collect(ch chan<- prometheus.Metric) {
 
 	var wg sync.WaitGroup
 
-	collectors := []func(context.Context, chan<- prometheus.Metric){
-		c.collectDashboardStats,
-		c.collectZones,
-		c.collectSettingsStats,
-		c.collectDHCP,
-		c.collectCluster,
-	}
-
-	for _, collect := range collectors {
+	for _, collect := range c.subCollectors {
 		wg.Add(1)
 		go func(collectFn func(context.Context, chan<- prometheus.Metric)) {
 			defer wg.Done()
@@ -740,4 +751,12 @@ func (c *TechnitiumCollector) logError(msg string, err error) {
 func (c *TechnitiumCollector) logDebug(msg string, args ...any) {
 	allArgs := append([]any{"target", c.target.Name}, args...)
 	c.logger.Debug(msg, allArgs...)
+}
+
+func emitGauge(ch chan<- prometheus.Metric, desc *prometheus.Desc, val float64, labels ...string) {
+	ch <- prometheus.MustNewConstMetric(desc, prometheus.GaugeValue, val, labels...)
+}
+
+func emitCounter(ch chan<- prometheus.Metric, desc *prometheus.Desc, val float64, labels ...string) {
+	ch <- prometheus.MustNewConstMetric(desc, prometheus.CounterValue, val, labels...)
 }

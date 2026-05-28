@@ -20,33 +20,32 @@ func (c *TechnitiumCollector) collectZones(ctx context.Context, ch chan<- promet
 			zoneName = "."
 		}
 
-		ch <- prometheus.MustNewConstMetric(c.descZoneInfo, prometheus.GaugeValue, 1,
+		emitGauge(ch, c.descZoneInfo, 1,
 			zoneName, zone.Type, zone.DNSSECStatus,
 		)
 
-		ch <- prometheus.MustNewConstMetric(c.descZoneDisabled, prometheus.GaugeValue, boolToFloat(zone.Disabled),
+		emitGauge(ch, c.descZoneDisabled, boolToFloat(zone.Disabled),
 			zoneName, zone.Type,
 		)
-		ch <- prometheus.MustNewConstMetric(c.descZoneExpired, prometheus.GaugeValue, boolToFloat(zone.IsExpired),
+		emitGauge(ch, c.descZoneExpired, boolToFloat(zone.IsExpired),
 			zoneName, zone.Type,
 		)
-		ch <- prometheus.MustNewConstMetric(c.descZoneSyncFailed, prometheus.GaugeValue, boolToFloat(zone.SyncFailed),
+		emitGauge(ch, c.descZoneSyncFailed, boolToFloat(zone.SyncFailed),
 			zoneName, zone.Type,
 		)
-		ch <- prometheus.MustNewConstMetric(c.descZoneNotifyFailed, prometheus.GaugeValue, boolToFloat(zone.NotifyFailed),
+		emitGauge(ch, c.descZoneNotifyFailed, boolToFloat(zone.NotifyFailed),
 			zoneName, zone.Type,
 		)
-		ch <- prometheus.MustNewConstMetric(c.descZoneInternal, prometheus.GaugeValue, boolToFloat(zone.Internal),
+		emitGauge(ch, c.descZoneInternal, boolToFloat(zone.Internal),
 			zoneName, zone.Type,
 		)
-		ch <- prometheus.MustNewConstMetric(c.descZoneSOASerial, prometheus.GaugeValue, float64(zone.SOASerial),
+		emitGauge(ch, c.descZoneSOASerial, float64(zone.SOASerial),
 			zoneName, zone.Type,
 		)
 
 		if zone.Expiry != "" {
 			if expiryTime, err := time.Parse(time.RFC3339Nano, zone.Expiry); err == nil {
-				ch <- prometheus.MustNewConstMetric(c.descZoneExpiryTimestamp, prometheus.GaugeValue,
-					float64(expiryTime.Unix()),
+				emitGauge(ch, c.descZoneExpiryTimestamp, float64(expiryTime.Unix()),
 					zoneName, zone.Type,
 				)
 			}
