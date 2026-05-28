@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.1](https://github.com/Supporterino/Technitium-Prometheus-Exporter/compare/v1.0.0...v1.0.1) (2026-05-28)
+
+
+### Performance Improvements
+
+* ⚡️ Apply codebase optimisation sweep ([59163d6](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/59163d6363863d409aacfd0f25e1d0505f341249))
+* ⚡️ Apply codebase optimisation sweep ([cc58f69](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/cc58f6915ba31f796aba9d1cfcb088a95672cf35))
+
 ## 1.0.0 (2026-05-28)
 
 
