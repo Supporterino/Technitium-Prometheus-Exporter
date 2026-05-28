@@ -1,0 +1,17 @@
+{{- if .Values.grafana.dashboards.enabled }}
+{{- $files := .Files.Glob "dashboards/*.json" }}
+{{- range $path, $content := $files }}
+{{- $name := base $path | trimSuffix ".json" }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "technitium-dns-exporter.fullname" $ }}-dashboard-{{ $name }}
+  labels:
+    {{- include "technitium-dns-exporter.labels" $ | nindent 4 }}
+    {{ $.Values.grafana.dashboards.label }}: {{ $.Values.grafana.dashboards.labelValue | quote }}
+data:
+  {{ base $path }}: |
+    {{- $content | nindent 4 }}
+{{- end }}
+{{- end }}

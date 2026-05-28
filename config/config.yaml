@@ -1,0 +1,35 @@
+exporter:
+  listen_address: ":9119"
+  metrics_path: "/metrics"
+  scrape_timeout: 30s
+  log_level: "info"
+
+targets:
+  - name: "dns-primary"
+    url: "http://dns1.example.com:5380"
+    api_token: "your-api-token-here"
+    tls_skip_verify: false
+    labels:
+      environment: "production"
+      region: "eu-west-1"
+    features:
+      dhcp: true
+      cluster: false
+
+  - name: "dns-cluster-node1"
+    url: "https://dns2.example.com:5381"
+    api_token: "${DNS2_API_TOKEN}"
+    tls_skip_verify: true
+    labels:
+      environment: "production"
+      cluster: "primary-cluster"
+    features:
+      dhcp: false
+      cluster: true
+
+  - name: "dns-dev"
+    url: "http://localhost:5380"
+    api_token: "dev-token"
+    labels:
+      environment: "development"
+    features: {}

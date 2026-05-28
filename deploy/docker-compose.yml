@@ -1,0 +1,77 @@
+version: "3.8"
+
+services:
+  technitium-dns:
+    image: technitium/dns-server:latest
+    container_name: technitium-dns
+    ports:
+      - "5380:5380"
+      - "53:53/udp"
+      - "53:53/tcp"
+    environment:
+      DNS_SERVER_DOMAIN: server1
+      DNS_SERVER_ADMIN_PASSWORD: admin
+    volumes:
+      - technitium-data:/etc/dns
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5380/api/dashboard/stats/get?token=admin"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  exporter:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: technitium-exporter
+    ports:
+      - "9119:9119"
+    volumes:
+      - ../config/config.yaml:/etc/exporter/config.yaml:ro
+    command: ["/bin/exporter", "--config", "/etc/exporter/config.yaml"]
+    depends_on:
+      technitium-dns:
+        condition: service_healthy
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+      - "--web.enable-lifecycle"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana-datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana-dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ../dashboards:/var/lib/grafana/dashboards:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  technitium-data:
+  prometheus-data:
+  grafana-data:
