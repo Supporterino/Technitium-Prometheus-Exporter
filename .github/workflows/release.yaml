@@ -53,7 +53,7 @@ jobs:
       - name: Package and push Helm chart
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          OWNER="$(echo "${GITHUB_REPOSITORY}" | cut -d/ -f1)"
+          OWNER="$(echo "${GITHUB_REPOSITORY}" | cut -d/ -f1 | tr '[:upper:]' '[:lower:]')"
 
           helm registry login ghcr.io \
             --username "${GITHUB_ACTOR}" \
