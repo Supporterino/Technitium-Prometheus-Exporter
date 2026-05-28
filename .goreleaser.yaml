@@ -33,10 +33,10 @@ checksum:
 
 dockers:
   - image_templates:
-      - 'ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .Tag }}'
-      - 'ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .Major }}.{{ .Minor }}'
-      - 'ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:{{ .Major }}'
-      - 'ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:latest'
+      - 'ghcr.io/{{ tolower .Env.GITHUB_REPOSITORY }}:{{ .Tag }}'
+      - 'ghcr.io/{{ tolower .Env.GITHUB_REPOSITORY }}:{{ .Major }}.{{ .Minor }}'
+      - 'ghcr.io/{{ tolower .Env.GITHUB_REPOSITORY }}:{{ .Major }}'
+      - 'ghcr.io/{{ tolower .Env.GITHUB_REPOSITORY }}:latest'
     dockerfile: deploy/Dockerfile
     use: buildx
     build_flag_templates:
