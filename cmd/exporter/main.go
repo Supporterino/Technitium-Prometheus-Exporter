@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"sync"
+	"sync/atomic"
 	"syscall"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -34,24 +35,26 @@ func main() {
 		configPath = "./config/config.yaml"
 	}
 
-	level := slog.LevelInfo
+	leveler := &atomicLevel{}
 	switch os.Getenv("EXPORTER_LOG_LEVEL") {
 	case "debug":
-		level = slog.LevelDebug
+		leveler.Set(slog.LevelDebug)
 	case "warn":
-		level = slog.LevelWarn
+		leveler.Set(slog.LevelWarn)
 	case "error":
-		level = slog.LevelError
+		leveler.Set(slog.LevelError)
+	default:
+		leveler.Set(slog.LevelInfo)
 	}
 
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: level}))
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: leveler}))
 
 	cfg, err := config.Load(configPath)
 	if err != nil {
 		logger.Error("failed to load config", "error", err)
 		os.Exit(1)
 	}
-	setLogLevel(logger, cfg.Exporter.LogLevel)
+	setLogLevel(leveler, cfg.Exporter.LogLevel)
 
 	mu := &sync.Mutex{}
 	var handler http.Handler = promhttp.HandlerFor(prometheus.NewRegistry(), promhttp.HandlerOpts{})
@@ -85,7 +88,7 @@ func main() {
 				logger.Warn("failed to reload config, keeping old config", "error", err)
 				continue
 			}
-			setLogLevel(logger, newCfg.Exporter.LogLevel)
+			setLogLevel(leveler, newCfg.Exporter.LogLevel)
 			cfg = newCfg
 			registerCollectors()
 			logger.Info("config reloaded successfully")
@@ -125,15 +128,27 @@ func main() {
 	}
 }
 
-func setLogLevel(logger *slog.Logger, level string) {
+func setLogLevel(leveler *atomicLevel, level string) {
 	switch level {
 	case "debug":
-		logger.Debug("log level set", "level", level)
+		leveler.Set(slog.LevelDebug)
 	case "warn":
-		logger.Warn("log level set", "level", level)
+		leveler.Set(slog.LevelWarn)
 	case "error":
-		logger.Error("log level set", "level", level)
+		leveler.Set(slog.LevelError)
 	default:
-		logger.Info("log level set", "level", level)
+		leveler.Set(slog.LevelInfo)
 	}
+}
+
+type atomicLevel struct {
+	level atomic.Int32
+}
+
+func (l *atomicLevel) Level() slog.Level {
+	return slog.Level(l.level.Load())
+}
+
+func (l *atomicLevel) Set(level slog.Level) {
+	l.level.Store(int32(level))
 }

@@ -243,22 +243,25 @@ func TestExporterNotFound(t *testing.T) {
 }
 
 func TestSetLogLevel(t *testing.T) {
-	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-
 	tests := []struct {
-		name  string
-		level string
+		name     string
+		level    string
+		expected slog.Level
 	}{
-		{"debug", "debug"},
-		{"info", "info"},
-		{"warn", "warn"},
-		{"error", "error"},
-		{"default (unknown)", "trace"},
+		{"debug", "debug", slog.LevelDebug},
+		{"info", "info", slog.LevelInfo},
+		{"warn", "warn", slog.LevelWarn},
+		{"error", "error", slog.LevelError},
+		{"default (unknown)", "trace", slog.LevelInfo},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			setLogLevel(logger, tt.level)
+			leveler := &atomicLevel{}
+			setLogLevel(leveler, tt.level)
+			if leveler.Level() != tt.expected {
+				t.Errorf("expected level %v, got %v", tt.expected, leveler.Level())
+			}
 		})
 	}
 }

@@ -349,36 +349,6 @@ func TestDoRequestMalformedJSON(t *testing.T) {
 	}
 }
 
-func TestDoPostRequestSuccess(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		if r.Method != http.MethodPost {
-			t.Errorf("expected POST, got %s", r.Method)
-		}
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"status": "ok",
-			"response": map[string]interface{}{
-				"result": "ok",
-			},
-		})
-	}))
-	defer ts.Close()
-
-	c := &APIClient{
-		httpClient: ts.Client(),
-		baseURL:    ts.URL,
-		token:      "test-token",
-	}
-
-	raw, err := c.doPostRequest(context.Background(), "/api/action", nil)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if raw == nil {
-		t.Fatal("expected non-nil response")
-	}
-}
-
 func TestGetDashboardStats(t *testing.T) {
 	ts := newClientTestServer(t)
 	defer ts.Close()

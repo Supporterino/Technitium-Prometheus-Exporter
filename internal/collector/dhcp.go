@@ -18,7 +18,7 @@ func (c *TechnitiumCollector) collectDHCP(ctx context.Context, ch chan<- prometh
 	}
 
 	for _, scope := range scopes {
-		ch <- prometheus.MustNewConstMetric(c.descDHCPScopeEnabled, prometheus.GaugeValue, boolToFloat(scope.Enabled), scope.Name)
+		emitGauge(ch, c.descDHCPScopeEnabled, boolToFloat(scope.Enabled), scope.Name)
 	}
 
 	leases, err := c.client.GetDHCPLeases(ctx)
@@ -38,12 +38,12 @@ func (c *TechnitiumCollector) collectDHCP(ctx context.Context, ch chan<- prometh
 	}
 
 	for scope, count := range leaseCounts {
-		ch <- prometheus.MustNewConstMetric(c.descDHCPLeases, prometheus.GaugeValue, float64(count), scope)
+		emitGauge(ch, c.descDHCPLeases, float64(count), scope)
 	}
 
 	for scope, types := range leaseByType {
 		for leaseType, count := range types {
-			ch <- prometheus.MustNewConstMetric(c.descDHCPLeasesByType, prometheus.GaugeValue, float64(count), scope, leaseType)
+			emitGauge(ch, c.descDHCPLeasesByType, float64(count), scope, leaseType)
 		}
 	}
 }

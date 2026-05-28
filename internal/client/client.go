@@ -1,7 +1,6 @@
 package client
 
 import (
-	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
@@ -25,6 +24,9 @@ func New(target config.Target) *APIClient {
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: target.TLSSkipVerify,
 		},
+		MaxIdleConns:        100,
+		MaxIdleConnsPerHost: 2,
+		IdleConnTimeout:     90 * time.Second,
 	}
 	return &APIClient{
 		httpClient: &http.Client{
@@ -37,8 +39,9 @@ func New(target config.Target) *APIClient {
 }
 
 type apiResponse struct {
-	Status   string          `json:"status"`
-	Response json.RawMessage `json:"response"`
+	Status       string          `json:"status"`
+	Response     json.RawMessage `json:"response"`
+	ErrorMessage string          `json:"errorMessage"`
 }
 
 func (c *APIClient) doRequest(ctx context.Context, apiPath string, params url.Values) (json.RawMessage, error) {
@@ -75,58 +78,8 @@ func (c *APIClient) doRequest(ctx context.Context, apiPath string, params url.Va
 	}
 
 	if apiResp.Status != "ok" {
-		var errResp struct {
-			ErrorMessage string `json:"errorMessage"`
-		}
-		if err := json.Unmarshal(body, &errResp); err == nil && errResp.ErrorMessage != "" {
-			return nil, fmt.Errorf("API error: %s", errResp.ErrorMessage)
-		}
-		return nil, fmt.Errorf("API returned status: %s", apiResp.Status)
-	}
-
-	return apiResp.Response, nil
-}
-
-func (c *APIClient) doPostRequest(ctx context.Context, apiPath string, formData url.Values) (json.RawMessage, error) {
-	u, err := url.Parse(c.baseURL + apiPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse URL: %w", err)
-	}
-
-	if formData == nil {
-		formData = url.Values{}
-	}
-	formData.Set("token", c.token)
-
-	body := bytes.NewBufferString(formData.Encode())
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u.String(), body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("request failed: %w", err)
-	}
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
-	}
-
-	var apiResp apiResponse
-	if err := json.Unmarshal(respBody, &apiResp); err != nil {
-		return nil, fmt.Errorf("failed to parse response: %w", err)
-	}
-
-	if apiResp.Status != "ok" {
-		var errResp struct {
-			ErrorMessage string `json:"errorMessage"`
-		}
-		if err := json.Unmarshal(respBody, &errResp); err == nil && errResp.ErrorMessage != "" {
-			return nil, fmt.Errorf("API error: %s", errResp.ErrorMessage)
+		if apiResp.ErrorMessage != "" {
+			return nil, fmt.Errorf("API error: %s", apiResp.ErrorMessage)
 		}
 		return nil, fmt.Errorf("API returned status: %s", apiResp.Status)
 	}
