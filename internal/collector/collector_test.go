@@ -2,6 +2,8 @@ package collector
 
 import (
 	"encoding/json"
+	"io"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -164,6 +166,99 @@ func newTestServer(t *testing.T) *httptest.Server {
 					"dnsOverQuicPort":                  853,
 					"qpmLimitSampleMinutes":            5,
 					"qpmLimitUdpTruncationPercentage": 90,
+				},
+			}
+			json.NewEncoder(w).Encode(resp)
+			return
+		}
+
+		if strings.Contains(r.URL.Path, "/api/dhcp/scopes/list") {
+			resp := map[string]interface{}{
+				"status": "ok",
+				"response": map[string]interface{}{
+					"scopes": []interface{}{
+						map[string]interface{}{
+							"name":            "LAN",
+							"enabled":         true,
+							"startingAddress": "192.168.1.100",
+							"endingAddress":   "192.168.1.200",
+							"subnetMask":      "255.255.255.0",
+						},
+						map[string]interface{}{
+							"name":            "Guest",
+							"enabled":         false,
+							"startingAddress": "10.0.0.100",
+							"endingAddress":   "10.0.0.200",
+							"subnetMask":      "255.255.255.0",
+						},
+					},
+				},
+			}
+			json.NewEncoder(w).Encode(resp)
+			return
+		}
+		if strings.Contains(r.URL.Path, "/api/dhcp/leases/list") {
+			resp := map[string]interface{}{
+				"status": "ok",
+				"response": map[string]interface{}{
+					"leases": []interface{}{
+						map[string]interface{}{
+							"scope":         "LAN",
+							"type":          "Dynamic",
+							"hardwareAddress": "00:11:22:33:44:55",
+							"address":       "192.168.1.100",
+							"hostName":      "client1",
+						},
+						map[string]interface{}{
+							"scope":         "LAN",
+							"type":          "Reserved",
+							"hardwareAddress": "00:11:22:33:44:66",
+							"address":       "192.168.1.101",
+							"hostName":      "client2",
+						},
+						map[string]interface{}{
+							"scope":         "Guest",
+							"type":          "Dynamic",
+							"hardwareAddress": "00:11:22:33:44:77",
+							"address":       "10.0.0.100",
+							"hostName":      "client3",
+						},
+					},
+				},
+			}
+			json.NewEncoder(w).Encode(resp)
+			return
+		}
+		if strings.Contains(r.URL.Path, "/api/admin/cluster/state") {
+			resp := map[string]interface{}{
+				"status": "ok",
+				"response": map[string]interface{}{
+					"clusterInitialized":              true,
+					"dnsServerDomain":                 "dns.example.com",
+					"version":                         "15.0",
+					"heartbeatRefreshIntervalSeconds": 30,
+					"heartbeatRetryIntervalSeconds":   5,
+					"configRefreshIntervalSeconds":    60,
+					"configRetryIntervalSeconds":      10,
+					"configLastSynced":                "2024-01-01T00:00:00Z",
+					"nodes": []interface{}{
+						map[string]interface{}{
+							"id":        1,
+							"name":      "node1",
+							"url":       "https://node1:5380",
+							"ipAddress": "10.0.0.1",
+							"type":      "primary",
+							"state":     "Self",
+						},
+						map[string]interface{}{
+							"id":        2,
+							"name":      "node2",
+							"url":       "https://node2:5380",
+							"ipAddress": "10.0.0.2",
+							"type":      "secondary",
+							"state":     "Connected",
+						},
+					},
 				},
 			}
 			json.NewEncoder(w).Encode(resp)
@@ -511,4 +606,357 @@ func labelMap(labels []*dto.LabelPair) map[string]string {
 		m[l.GetName()] = l.GetValue()
 	}
 	return m
+}
+
+func TestCollectorDHCP(t *testing.T) {
+	ts := newTestServer(t)
+	defer ts.Close()
+
+	target := config.Target{
+		Name:     "test-instance",
+		URL:      ts.URL,
+		APIToken: "test-token",
+		Labels:   map[string]string{},
+		Features: config.FeatureFlags{DHCP: true},
+	}
+	c := New(target, 30*time.Second, nil)
+
+	registry := prometheus.NewRegistry()
+	registry.MustRegister(c)
+
+	metrics, err := registry.Gather()
+	if err != nil {
+		t.Fatalf("failed to gather: %v", err)
+	}
+
+	foundScope := false
+	foundLeases := false
+	for _, mf := range metrics {
+		switch mf.GetName() {
+		case "technitium_dns_dhcp_scope_enabled":
+			foundScope = true
+			for _, m := range mf.Metric {
+				labels := labelMap(m.GetLabel())
+				switch labels["scope"] {
+				case "LAN":
+					if m.GetGauge().GetValue() != 1 {
+						t.Errorf("expected LAN enabled=1, got %f", m.GetGauge().GetValue())
+					}
+				case "Guest":
+					if m.GetGauge().GetValue() != 0 {
+						t.Errorf("expected Guest enabled=0, got %f", m.GetGauge().GetValue())
+					}
+				}
+			}
+		case "technitium_dns_dhcp_leases_count":
+			foundLeases = true
+			for _, m := range mf.Metric {
+				labels := labelMap(m.GetLabel())
+				switch labels["scope"] {
+				case "LAN":
+					if m.GetGauge().GetValue() != 2 {
+						t.Errorf("expected LAN lease count=2, got %f", m.GetGauge().GetValue())
+					}
+				case "Guest":
+					if m.GetGauge().GetValue() != 1 {
+						t.Errorf("expected Guest lease count=1, got %f", m.GetGauge().GetValue())
+					}
+				}
+			}
+		}
+	}
+	if !foundScope {
+		t.Error("technitium_dns_dhcp_scope_enabled not found")
+	}
+	if !foundLeases {
+		t.Error("technitium_dns_dhcp_leases_count not found")
+	}
+}
+
+func TestCollectorCluster(t *testing.T) {
+	ts := newTestServer(t)
+	defer ts.Close()
+
+	target := config.Target{
+		Name:     "test-instance",
+		URL:      ts.URL,
+		APIToken: "test-token",
+		Labels:   map[string]string{},
+		Features: config.FeatureFlags{Cluster: true},
+	}
+	c := New(target, 30*time.Second, nil)
+
+	registry := prometheus.NewRegistry()
+	registry.MustRegister(c)
+
+	metrics, err := registry.Gather()
+	if err != nil {
+		t.Fatalf("failed to gather: %v", err)
+	}
+
+	foundNodeState := false
+	foundHeartbeat := false
+	for _, mf := range metrics {
+		switch mf.GetName() {
+		case "technitium_dns_cluster_node_state":
+			foundNodeState = true
+			for _, m := range mf.Metric {
+				labels := labelMap(m.GetLabel())
+				switch labels["node"] {
+				case "node1":
+					if m.GetGauge().GetValue() != 2 {
+						t.Errorf("expected node1 Self=2, got %f", m.GetGauge().GetValue())
+					}
+				case "node2":
+					if m.GetGauge().GetValue() != 1 {
+						t.Errorf("expected node2 Connected=1, got %f", m.GetGauge().GetValue())
+					}
+				}
+			}
+		case "technitium_dns_cluster_heartbeat_interval_seconds":
+			foundHeartbeat = true
+			for _, m := range mf.Metric {
+				if m.GetGauge().GetValue() != 30 {
+					t.Errorf("expected heartbeat interval=30, got %f", m.GetGauge().GetValue())
+				}
+			}
+		}
+	}
+	if !foundNodeState {
+		t.Error("technitium_dns_cluster_node_state not found")
+	}
+	if !foundHeartbeat {
+		t.Error("technitium_dns_cluster_heartbeat_interval_seconds not found")
+	}
+}
+
+func TestCollectorClusterConfigLastSynced(t *testing.T) {
+	ts := newTestServer(t)
+	defer ts.Close()
+
+	target := config.Target{
+		Name:     "test-instance",
+		URL:      ts.URL,
+		APIToken: "test-token",
+		Labels:   map[string]string{},
+		Features: config.FeatureFlags{Cluster: true},
+	}
+	c := New(target, 30*time.Second, nil)
+
+	registry := prometheus.NewRegistry()
+	registry.MustRegister(c)
+
+	metrics, err := registry.Gather()
+	if err != nil {
+		t.Fatalf("failed to gather: %v", err)
+	}
+
+	found := false
+	for _, mf := range metrics {
+		if mf.GetName() == "technitium_dns_cluster_config_last_synced_timestamp_seconds" {
+			found = true
+			if len(mf.Metric) == 0 {
+				t.Error("expected config last synced metric")
+			}
+		}
+	}
+	if !found {
+		t.Error("technitium_dns_cluster_config_last_synced_timestamp_seconds not found")
+	}
+}
+
+func TestCollectorAPIErrorResponses(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"status": "error",
+			"response": map[string]interface{}{
+				"errorMessage": "internal server error",
+			},
+		})
+	}))
+	defer ts.Close()
+
+	target := config.Target{
+		Name:     "test-instance",
+		URL:      ts.URL,
+		APIToken: "test-token",
+		Labels:   map[string]string{},
+	}
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	c := New(target, 30*time.Second, logger)
+
+	registry := prometheus.NewRegistry()
+	registry.MustRegister(c)
+
+	// Should not panic; scrapeSuccess remains 1 despite API errors
+	metrics, err := registry.Gather()
+	if err != nil {
+		t.Fatalf("failed to gather: %v", err)
+	}
+
+	for _, mf := range metrics {
+		if mf.GetName() == "technitium_dns_scrape_success" {
+			for _, m := range mf.Metric {
+				if m.GetGauge().GetValue() != 1 {
+					t.Error("scrape_success must be 1 even when API returns errors")
+				}
+			}
+		}
+	}
+}
+
+func TestCollectorEmptyResponses(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"status":   "ok",
+			"response": map[string]interface{}{},
+		})
+	}))
+	defer ts.Close()
+
+	target := config.Target{
+		Name:     "test-instance",
+		URL:      ts.URL,
+		APIToken: "test-token",
+		Labels:   map[string]string{},
+	}
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	c := New(target, 30*time.Second, logger)
+
+	registry := prometheus.NewRegistry()
+	registry.MustRegister(c)
+
+	metrics, err := registry.Gather()
+	if err != nil {
+		t.Fatalf("failed to gather: %v", err)
+	}
+
+	// Should still produce scrape metrics even with empty API responses
+	foundScrape := false
+	foundDuration := false
+	for _, mf := range metrics {
+		switch mf.GetName() {
+		case "technitium_dns_scrape_success":
+			foundScrape = true
+		case "technitium_dns_scrape_duration_seconds":
+			foundDuration = true
+		}
+	}
+	if !foundScrape {
+		t.Error("scrape_success not found in collected metrics")
+	}
+	if !foundDuration {
+		t.Error("scrape_duration_seconds not found in collected metrics")
+	}
+}
+
+func TestCollectorMalformedJSON(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte("not valid json at all {{{"))
+	}))
+	defer ts.Close()
+
+	target := config.Target{
+		Name:     "test-instance",
+		URL:      ts.URL,
+		APIToken: "test-token",
+		Labels:   map[string]string{},
+	}
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	c := New(target, 30*time.Second, logger)
+
+	registry := prometheus.NewRegistry()
+	registry.MustRegister(c)
+
+	// Should not panic even with malformed JSON from API
+	metrics, err := registry.Gather()
+	if err != nil {
+		t.Fatalf("failed to gather: %v", err)
+	}
+
+	for _, mf := range metrics {
+		if mf.GetName() == "technitium_dns_scrape_success" {
+			for _, m := range mf.Metric {
+				if m.GetGauge().GetValue() != 1 {
+					t.Error("scrape_success must be 1 even with malformed JSON")
+				}
+			}
+		}
+	}
+
+	if len(metrics) < 2 {
+		t.Error("expected at least scrape_success and scrape_duration metrics")
+	}
+}
+
+func TestCollectorScrapeDuration(t *testing.T) {
+	ts := newTestServer(t)
+	defer ts.Close()
+
+	target := config.Target{
+		Name:     "test-instance",
+		URL:      ts.URL,
+		APIToken: "test-token",
+		Labels:   map[string]string{},
+	}
+	c := New(target, 30*time.Second, nil)
+
+	registry := prometheus.NewRegistry()
+	registry.MustRegister(c)
+
+	metrics, err := registry.Gather()
+	if err != nil {
+		t.Fatalf("failed to gather: %v", err)
+	}
+
+	found := false
+	for _, mf := range metrics {
+		if mf.GetName() == "technitium_dns_scrape_duration_seconds" {
+			found = true
+			if len(mf.Metric) != 1 {
+				t.Errorf("expected 1 scrape_duration metric, got %d", len(mf.Metric))
+			}
+			for _, m := range mf.Metric {
+				if m.GetGauge().GetValue() < 0 {
+					t.Error("scrape duration must be non-negative")
+				}
+			}
+		}
+	}
+	if !found {
+		t.Error("technitium_dns_scrape_duration_seconds not found")
+	}
+}
+
+func TestCollectorInstanceLabel(t *testing.T) {
+	ts := newTestServer(t)
+	defer ts.Close()
+
+	target := config.Target{
+		Name:     "my-instance",
+		URL:      ts.URL,
+		APIToken: "test-token",
+		Labels:   map[string]string{},
+	}
+	c := New(target, 30*time.Second, nil)
+
+	registry := prometheus.NewRegistry()
+	registry.MustRegister(c)
+
+	metrics, err := registry.Gather()
+	if err != nil {
+		t.Fatalf("failed to gather: %v", err)
+	}
+
+	for _, mf := range metrics {
+		for _, m := range mf.Metric {
+			labels := labelMap(m.GetLabel())
+			if labels["instance"] != "my-instance" {
+				t.Errorf("expected instance=my-instance on metric %s, got %s", mf.GetName(), labels["instance"])
+			}
+		}
+	}
 }
