@@ -18,6 +18,9 @@ import (
 
 var (
 	configPath string
+	version    = "dev"
+	commit     = "unknown"
+	date       = "unknown"
 )
 
 func main() {
