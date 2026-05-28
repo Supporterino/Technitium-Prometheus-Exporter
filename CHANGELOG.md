@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.4](https://github.com/Supporterino/Technitium-Prometheus-Exporter/compare/v1.0.3...v1.0.4) (2026-05-28)
+
+
+### Bug Fixes
+
+* **build:** 🐛 Lowercase docker image tag in goreleaser for OCI registry ([f85c99b](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/f85c99b1fef7805a23eb01a903977b96488abb7e))
+* **build:** 🐛 Lowercase docker image tag in goreleaser for OCI registry ([b943930](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/b943930ffdb68c48aa97727332436aa0b5cebf5d))
+
 ## [1.0.3](https://github.com/Supporterino/Technitium-Prometheus-Exporter/compare/v1.0.2...v1.0.3) (2026-05-28)
 
 
