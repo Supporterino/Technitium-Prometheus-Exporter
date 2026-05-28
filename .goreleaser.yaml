@@ -39,8 +39,7 @@ dockers:
       - 'ghcr.io/{{ tolower .Env.GITHUB_REPOSITORY }}:latest'
     dockerfile: deploy/Dockerfile
     use: buildx
-    build_flag_templates:
-      - '--platform=linux/amd64,linux/arm64'
+    goarch: amd64
 
 changelog:
   sort: asc
