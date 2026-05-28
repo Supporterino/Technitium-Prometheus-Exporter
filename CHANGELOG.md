@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.6](https://github.com/Supporterino/Technitium-Prometheus-Exporter/compare/v1.0.5...v1.0.6) (2026-05-28)
+
+
+### Bug Fixes
+
+* **ci:** 🐛 Lowercase Helm OCI push owner to fix invalid repository re… ([6d258f9](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/6d258f9dd6c3ec33370edca7a29ac1ab6a4a6cc4))
+* **ci:** 🐛 Lowercase Helm OCI push owner to fix invalid repository reference ([136814a](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/136814ada2bb30ee6735aeb67397b36eccce3f27))
+
 ## [1.0.5](https://github.com/Supporterino/Technitium-Prometheus-Exporter/compare/v1.0.4...v1.0.5) (2026-05-28)
 
 
