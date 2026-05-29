@@ -90,6 +90,24 @@ func (c *Config) Validate() error {
 		return fmt.Errorf("at least one target must be configured")
 	}
 
+	reservedLabelNames := map[string]bool{
+		"address":     true,
+		"dnssec_status": true,
+		"mode":        true,
+		"protocol":    true,
+		"scope":       true,
+		"type":        true,
+		"version":     true,
+		"zone":        true,
+		"node":        true,
+		"node_type":   true,
+		"ip_address":  true,
+		"cluster_node":  true,
+		"cluster_node_type": true,
+		"cluster_ip_address": true,
+		"instance":    true,
+	}
+
 	for i, t := range c.Targets {
 		if t.Name == "" {
 			return fmt.Errorf("target[%d]: name is required", i)
@@ -102,6 +120,11 @@ func (c *Config) Validate() error {
 		}
 		if t.Labels == nil {
 			t.Labels = make(map[string]string)
+		}
+		for k := range t.Labels {
+			if reservedLabelNames[k] {
+				return fmt.Errorf("target[%d] (%s): label %q conflicts with a reserved Prometheus variable label name", i, t.Name, k)
+			}
 		}
 		c.Targets[i] = t
 	}

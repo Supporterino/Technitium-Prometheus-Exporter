@@ -13,7 +13,7 @@
       "fieldConfig": { "defaults": { "mappings": [ { "options": { "0": { "color": "red", "text": "Unreachable" }, "1": { "color": "green", "text": "Connected" }, "2": { "color": "blue", "text": "Self" } }, "type": "value" } ], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "none" } },
       "gridPos": { "h": 12, "w": 12, "x": 0, "y": 1 }, "id": 1,
       "options": { "showHeader": true },
-      "targets": [ { "expr": "technitium_dns_cluster_node_state{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{node}}", "refId": "A", "format": "table", "instant": true } ],
+      "targets": [ { "expr": "technitium_dns_cluster_node_state{instance=~\"$target\",job=~\"$job\"}", "legendFormat": "{{cluster_node}}", "refId": "A", "format": "table", "instant": true } ],
       "title": "Node State", "type": "table"
     },
     {

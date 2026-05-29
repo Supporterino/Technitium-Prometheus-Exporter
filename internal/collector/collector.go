@@ -291,7 +291,7 @@ func New(target config.Target, timeout time.Duration, logger *slog.Logger) *Tech
 		descClusterNodeState: prometheus.NewDesc(
 			"technitium_dns_cluster_node_state",
 			"State of a cluster node.",
-			[]string{"node", "node_type", "ip_address"}, labels,
+			[]string{"cluster_node", "cluster_node_type", "cluster_ip_address"}, labels,
 		),
 		descHeartbeatInterval: prometheus.NewDesc(
 			"technitium_dns_cluster_heartbeat_interval_seconds",

@@ -702,7 +702,7 @@ func TestCollectorCluster(t *testing.T) {
 			foundNodeState = true
 			for _, m := range mf.Metric {
 				labels := labelMap(m.GetLabel())
-				switch labels["node"] {
+				switch labels["cluster_node"] {
 				case "node1":
 					if m.GetGauge().GetValue() != 2 {
 						t.Errorf("expected node1 Self=2, got %f", m.GetGauge().GetValue())

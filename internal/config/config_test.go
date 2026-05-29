@@ -129,6 +129,18 @@ targets:
 			config: "exporter:\n  log_level: invalid\ntargets:\n  - name: dns\n    url: http://localhost:5380\n    api_token: token\n",
 			errMsg: "invalid log_level",
 		},
+		{
+			name: "reserved label name",
+			config: `
+targets:
+  - name: dns
+    url: http://localhost:5380
+    api_token: token
+    labels:
+      node: primary
+`,
+			errMsg: "conflicts with a reserved Prometheus variable label name",
+		},
 	}
 
 	for _, tt := range tests {
