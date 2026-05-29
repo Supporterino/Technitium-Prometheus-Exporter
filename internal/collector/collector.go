@@ -126,7 +126,7 @@ type TechnitiumCollector struct {
 }
 
 func New(target config.Target, timeout time.Duration, logger *slog.Logger) *TechnitiumCollector {
-	perRequestTimeout := timeout / 3
+	perRequestTimeout := timeout
 	if perRequestTimeout < 5*time.Second {
 		perRequestTimeout = 5 * time.Second
 	}

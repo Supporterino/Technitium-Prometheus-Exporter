@@ -32,7 +32,7 @@ func New(target config.Target, requestTimeout time.Duration) *APIClient {
 	return &APIClient{
 		httpClient: &http.Client{
 			Transport: tr,
-			Timeout:   requestTimeout * 2,
+			Timeout:   requestTimeout,
 		},
 		baseURL:        target.URL,
 		token:          target.APIToken,
