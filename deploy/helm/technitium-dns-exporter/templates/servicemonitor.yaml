@@ -17,6 +17,7 @@ spec:
       interval: {{ .Values.serviceMonitor.interval }}
       scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
       path: /metrics
+      honorLabels: true
   namespaceSelector:
     matchNames:
       - {{ .Release.Namespace }}
