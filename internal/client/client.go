@@ -14,27 +14,29 @@ import (
 )
 
 type APIClient struct {
-	httpClient *http.Client
-	baseURL    string
-	token      string
+	httpClient     *http.Client
+	baseURL        string
+	token          string
+	requestTimeout time.Duration
 }
 
-func New(target config.Target) *APIClient {
+func New(target config.Target, requestTimeout time.Duration) *APIClient {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: target.TLSSkipVerify,
 		},
 		MaxIdleConns:        100,
-		MaxIdleConnsPerHost: 2,
+		MaxIdleConnsPerHost: 10,
 		IdleConnTimeout:     90 * time.Second,
 	}
 	return &APIClient{
 		httpClient: &http.Client{
 			Transport: tr,
-			Timeout:   30 * time.Second,
+			Timeout:   requestTimeout * 2,
 		},
-		baseURL: target.URL,
-		token:   target.APIToken,
+		baseURL:        target.URL,
+		token:          target.APIToken,
+		requestTimeout: requestTimeout,
 	}
 }
 
@@ -45,6 +47,12 @@ type apiResponse struct {
 }
 
 func (c *APIClient) doRequest(ctx context.Context, apiPath string, params url.Values) (json.RawMessage, error) {
+	if c.requestTimeout > 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, c.requestTimeout)
+		defer cancel()
+	}
+
 	u, err := url.Parse(c.baseURL + apiPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse URL: %w", err)
@@ -63,7 +71,7 @@ func (c *APIClient) doRequest(ctx context.Context, apiPath string, params url.Va
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("request failed: %w", err)
+		return nil, fmt.Errorf("request to %s failed: %w", apiPath, err)
 	}
 	defer resp.Body.Close()
 

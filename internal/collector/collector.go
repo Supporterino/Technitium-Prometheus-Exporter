@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -17,6 +18,8 @@ type TechnitiumCollector struct {
 	target  config.Target
 	logger  *slog.Logger
 	timeout time.Duration
+
+	scrapeTimeoutNanos atomic.Int64
 
 	descs         []*prometheus.Desc
 	subCollectors []func(context.Context, chan<- prometheus.Metric)
@@ -123,7 +126,11 @@ type TechnitiumCollector struct {
 }
 
 func New(target config.Target, timeout time.Duration, logger *slog.Logger) *TechnitiumCollector {
-	apiClient := client.New(target)
+	perRequestTimeout := timeout / 3
+	if perRequestTimeout < 5*time.Second {
+		perRequestTimeout = 5 * time.Second
+	}
+	apiClient := client.New(target, perRequestTimeout)
 	labels := target.Labels
 	labels["instance"] = target.Name
 
@@ -719,8 +726,17 @@ func (c *TechnitiumCollector) Describe(ch chan<- *prometheus.Desc) {
 	}
 }
 
+func (c *TechnitiumCollector) SetScrapeTimeout(timeout time.Duration) {
+	c.scrapeTimeoutNanos.Store(int64(timeout))
+}
+
 func (c *TechnitiumCollector) Collect(ch chan<- prometheus.Metric) {
-	ctx, cancel := context.WithTimeout(context.Background(), c.timeout)
+	scrapeTimeout := c.timeout
+	if d := c.scrapeTimeoutNanos.Load(); d > 0 {
+		scrapeTimeout = time.Duration(d)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), scrapeTimeout)
 	defer cancel()
 
 	start := time.Now()
@@ -745,7 +761,7 @@ func (c *TechnitiumCollector) Collect(ch chan<- prometheus.Metric) {
 }
 
 func (c *TechnitiumCollector) logError(msg string, err error) {
-	c.logger.Error(msg, "target", c.target.Name, "error", err)
+	c.logger.Error(msg, "target", c.target.Name, "error", err, "errorType", "api_call")
 }
 
 func (c *TechnitiumCollector) logDebug(msg string, args ...any) {

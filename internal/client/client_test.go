@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"technitium-dns-exporter/internal/config"
 )
@@ -200,7 +201,7 @@ func TestNew(t *testing.T) {
 		APIToken:       "token",
 		TLSSkipVerify:  true,
 	}
-	client := New(target)
+	client := New(target, 10*time.Second)
 	if client == nil {
 		t.Fatal("expected non-nil client")
 	}

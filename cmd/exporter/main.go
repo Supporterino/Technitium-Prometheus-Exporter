@@ -6,9 +6,11 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"syscall"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -57,6 +59,7 @@ func main() {
 	setLogLevel(leveler, cfg.Exporter.LogLevel)
 
 	mu := &sync.Mutex{}
+	var targets []*collector.TechnitiumCollector
 	var handler http.Handler = promhttp.HandlerFor(prometheus.NewRegistry(), promhttp.HandlerOpts{})
 
 	registerCollectors := func() {
@@ -64,14 +67,17 @@ func main() {
 		defer mu.Unlock()
 
 		var registries []prometheus.Gatherer
+		var newTargets []*collector.TechnitiumCollector
 
 		for _, target := range cfg.Targets {
 			reg := prometheus.NewRegistry()
 			c := collector.New(target, cfg.Exporter.ScrapeTimeout, logger)
 			reg.MustRegister(c)
 			registries = append(registries, reg)
+			newTargets = append(newTargets, c)
 		}
 
+		targets = newTargets
 		handler = promhttp.HandlerFor(prometheus.Gatherers(registries), promhttp.HandlerOpts{})
 	}
 
@@ -98,7 +104,19 @@ func main() {
 	http.HandleFunc(cfg.Exporter.MetricsPath, func(w http.ResponseWriter, r *http.Request) {
 		mu.Lock()
 		h := handler
+		ts := make([]*collector.TechnitiumCollector, len(targets))
+		copy(ts, targets)
 		mu.Unlock()
+
+		if scrapeTimeout := r.Header.Get("X-Prometheus-Scrape-Timeout-Seconds"); scrapeTimeout != "" {
+			if secs, err := strconv.ParseFloat(scrapeTimeout, 64); err == nil && secs > 0 {
+				timeout := time.Duration(secs * float64(time.Second))
+				for _, t := range ts {
+					t.SetScrapeTimeout(timeout)
+				}
+			}
+		}
+
 		h.ServeHTTP(w, r)
 	})
 
