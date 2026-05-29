@@ -283,7 +283,7 @@ func TestCollectorScrapeSuccess(t *testing.T) {
 		APIToken: "test-token",
 		Labels:   map[string]string{},
 	}
-	c := New(target, 30*time.Second, nil)
+	c := New(target, 5*time.Second, 30*time.Second, nil)
 
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(c)
@@ -312,7 +312,7 @@ func TestCollectorScrapeSuccessMetric(t *testing.T) {
 		APIToken: "test-token",
 		Labels:   map[string]string{},
 	}
-	c := New(target, 30*time.Second, nil)
+	c := New(target, 5*time.Second, 30*time.Second, nil)
 
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(c)
@@ -347,7 +347,7 @@ func TestCollectorZones(t *testing.T) {
 		APIToken: "test-token",
 		Labels:   map[string]string{},
 	}
-	c := New(target, 30*time.Second, nil)
+	c := New(target, 5*time.Second, 30*time.Second, nil)
 
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(c)
@@ -382,7 +382,7 @@ func TestCollectorForwarderCount(t *testing.T) {
 		APIToken: "test-token",
 		Labels:   map[string]string{},
 	}
-	c := New(target, 30*time.Second, nil)
+	c := New(target, 5*time.Second, 30*time.Second, nil)
 
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(c)
@@ -419,7 +419,7 @@ func TestCollectorSettingsMetrics(t *testing.T) {
 		APIToken: "test-token",
 		Labels:   map[string]string{},
 	}
-	c := New(target, 30*time.Second, nil)
+	c := New(target, 5*time.Second, 30*time.Second, nil)
 
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(c)
@@ -509,7 +509,7 @@ func TestCollectorZoneStateMetrics(t *testing.T) {
 		APIToken: "test-token",
 		Labels:   map[string]string{},
 	}
-	c := New(target, 30*time.Second, nil)
+	c := New(target, 5*time.Second, 30*time.Second, nil)
 
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(c)
@@ -571,7 +571,7 @@ func TestCollectorProtocolEnabled(t *testing.T) {
 		APIToken: "test-token",
 		Labels:   map[string]string{},
 	}
-	c := New(target, 30*time.Second, nil)
+	c := New(target, 5*time.Second, 30*time.Second, nil)
 
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(c)
@@ -619,7 +619,7 @@ func TestCollectorDHCP(t *testing.T) {
 		Labels:   map[string]string{},
 		Features: config.FeatureFlags{DHCP: true},
 	}
-	c := New(target, 30*time.Second, nil)
+	c := New(target, 5*time.Second, 30*time.Second, nil)
 
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(c)
@@ -684,7 +684,7 @@ func TestCollectorCluster(t *testing.T) {
 		Labels:   map[string]string{},
 		Features: config.FeatureFlags{Cluster: true},
 	}
-	c := New(target, 30*time.Second, nil)
+	c := New(target, 5*time.Second, 30*time.Second, nil)
 
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(c)
@@ -741,7 +741,7 @@ func TestCollectorClusterConfigLastSynced(t *testing.T) {
 		Labels:   map[string]string{},
 		Features: config.FeatureFlags{Cluster: true},
 	}
-	c := New(target, 30*time.Second, nil)
+	c := New(target, 5*time.Second, 30*time.Second, nil)
 
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(c)
@@ -784,7 +784,7 @@ func TestCollectorAPIErrorResponses(t *testing.T) {
 		Labels:   map[string]string{},
 	}
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	c := New(target, 30*time.Second, logger)
+	c := New(target, 5*time.Second, 30*time.Second, logger)
 
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(c)
@@ -823,7 +823,7 @@ func TestCollectorEmptyResponses(t *testing.T) {
 		Labels:   map[string]string{},
 	}
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	c := New(target, 30*time.Second, logger)
+	c := New(target, 5*time.Second, 30*time.Second, logger)
 
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(c)
@@ -866,7 +866,7 @@ func TestCollectorMalformedJSON(t *testing.T) {
 		Labels:   map[string]string{},
 	}
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	c := New(target, 30*time.Second, logger)
+	c := New(target, 5*time.Second, 30*time.Second, logger)
 
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(c)
@@ -902,7 +902,7 @@ func TestCollectorScrapeDuration(t *testing.T) {
 		APIToken: "test-token",
 		Labels:   map[string]string{},
 	}
-	c := New(target, 30*time.Second, nil)
+	c := New(target, 5*time.Second, 30*time.Second, nil)
 
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(c)
@@ -941,7 +941,7 @@ func TestCollectorInstanceLabel(t *testing.T) {
 		APIToken: "test-token",
 		Labels:   map[string]string{},
 	}
-	c := New(target, 30*time.Second, nil)
+	c := New(target, 5*time.Second, 30*time.Second, nil)
 
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(c)

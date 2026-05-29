@@ -125,12 +125,8 @@ type TechnitiumCollector struct {
 	descVersionInfo               *prometheus.Desc
 }
 
-func New(target config.Target, timeout time.Duration, logger *slog.Logger) *TechnitiumCollector {
-	perRequestTimeout := timeout
-	if perRequestTimeout < 5*time.Second {
-		perRequestTimeout = 5 * time.Second
-	}
-	apiClient := client.New(target, perRequestTimeout)
+func New(target config.Target, requestTimeout time.Duration, scrapeTimeout time.Duration, logger *slog.Logger) *TechnitiumCollector {
+	apiClient := client.New(target, requestTimeout)
 	labels := target.Labels
 	labels["instance"] = target.Name
 
@@ -138,7 +134,7 @@ func New(target config.Target, timeout time.Duration, logger *slog.Logger) *Tech
 		client:  apiClient,
 		target:  target,
 		logger:  logger,
-		timeout: timeout,
+		timeout: scrapeTimeout,
 
 		descScrapeSuccess: prometheus.NewDesc(
 			"technitium_dns_scrape_success",

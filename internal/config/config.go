@@ -22,12 +22,13 @@ type ExporterConfig struct {
 }
 
 type Target struct {
-	Name           string            `yaml:"name"`
-	URL            string            `yaml:"url"`
-	APIToken       string            `yaml:"api_token"`
-	TLSSkipVerify  bool              `yaml:"tls_skip_verify"`
-	Labels         map[string]string `yaml:"labels"`
-	Features       FeatureFlags      `yaml:"features"`
+	Name            string            `yaml:"name"`
+	URL             string            `yaml:"url"`
+	APIToken        string            `yaml:"api_token"`
+	TLSSkipVerify   bool              `yaml:"tls_skip_verify"`
+	RequestTimeout  time.Duration     `yaml:"request_timeout"`
+	Labels          map[string]string `yaml:"labels"`
+	Features        FeatureFlags      `yaml:"features"`
 }
 
 type FeatureFlags struct {
@@ -120,6 +121,9 @@ func (c *Config) Validate() error {
 		}
 		if t.Labels == nil {
 			t.Labels = make(map[string]string)
+		}
+		if t.RequestTimeout == 0 {
+			t.RequestTimeout = 5 * time.Second
 		}
 		for k := range t.Labels {
 			if reservedLabelNames[k] {

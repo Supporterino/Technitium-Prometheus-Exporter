@@ -9,6 +9,7 @@ targets:
     url: "http://dns1.example.com:5380"
     api_token: "your-api-token-here"
     tls_skip_verify: false
+    request_timeout: 10s
     labels:
       environment: "production"
       region: "eu-west-1"
@@ -20,6 +21,7 @@ targets:
     url: "https://dns2.example.com:5381"
     api_token: "${DNS2_API_TOKEN}"
     tls_skip_verify: true
+    request_timeout: 5s
     labels:
       environment: "production"
       cluster: "primary-cluster"

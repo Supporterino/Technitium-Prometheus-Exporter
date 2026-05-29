@@ -19,6 +19,7 @@ targets:
   - name: "dns-primary"
     url: "http://localhost:5380"
     api_token: "test-token"
+    request_timeout: 10s
     labels:
       env: "prod"
     features:
@@ -46,6 +47,9 @@ targets:
 	}
 	if cfg.Targets[0].Name != "dns-primary" {
 		t.Errorf("expected target name dns-primary, got %q", cfg.Targets[0].Name)
+	}
+	if cfg.Targets[0].RequestTimeout != 10*time.Second {
+		t.Errorf("expected request_timeout 10s, got %v", cfg.Targets[0].RequestTimeout)
 	}
 	if cfg.Targets[0].Labels["env"] != "prod" {
 		t.Errorf("expected label env=prod, got %q", cfg.Targets[0].Labels["env"])
@@ -83,6 +87,9 @@ targets:
 	}
 	if cfg.Exporter.LogLevel != "info" {
 		t.Errorf("expected default log_level info, got %q", cfg.Exporter.LogLevel)
+	}
+	if cfg.Targets[0].RequestTimeout != 5*time.Second {
+		t.Errorf("expected default request_timeout 5s, got %v", cfg.Targets[0].RequestTimeout)
 	}
 }
 

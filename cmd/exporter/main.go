@@ -71,7 +71,7 @@ func main() {
 
 		for _, target := range cfg.Targets {
 			reg := prometheus.NewRegistry()
-			c := collector.New(target, cfg.Exporter.ScrapeTimeout, logger)
+			c := collector.New(target, target.RequestTimeout, cfg.Exporter.ScrapeTimeout, logger)
 			reg.MustRegister(c)
 			registries = append(registries, reg)
 			newTargets = append(newTargets, c)

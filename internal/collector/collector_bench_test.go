@@ -22,7 +22,7 @@ func BenchmarkCollectorNew(b *testing.B) {
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = New(target, 30*time.Second, nil)
+		_ = New(target, 5*time.Second, 30*time.Second, nil)
 	}
 }
 
@@ -43,7 +43,7 @@ func BenchmarkCollectorCollect(b *testing.B) {
 		Labels:   map[string]string{},
 	}
 	logger := slog.New(slog.DiscardHandler)
-	c := New(target, 30*time.Second, logger)
+	c := New(target, 5*time.Second, 30*time.Second, logger)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -64,7 +64,7 @@ func BenchmarkCollectorDescribe(b *testing.B) {
 		APIToken: "bench-token",
 		Labels:   map[string]string{},
 	}
-	c := New(target, 30*time.Second, nil)
+	c := New(target, 5*time.Second, 30*time.Second, nil)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
