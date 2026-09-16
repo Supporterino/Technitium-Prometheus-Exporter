@@ -64,7 +64,7 @@
       "fieldConfig": { "defaults": { "mappings": [], "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] }, "unit": "short" } },
       "gridPos": { "h": 6, "w": 12, "x": 0, "y": 20 }, "id": 4,
       "options": { "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdLabels": false, "showThresholdMarkers": true },
-      "targets": [ { "expr": "count(technitium_dns_cluster_node_state{instance=~\"$target\",job=~\"$job\"})", "legendFormat": "{{instance}}", "refId": "A" } ],
+      "targets": [ { "expr": "count by (instance) (technitium_dns_cluster_node_state{instance=~\"$target\",job=~\"$job\"})", "legendFormat": "{{instance}}", "refId": "A" } ],
       "title": "Node Count", "type": "stat"
     },
     {
@@ -82,8 +82,8 @@
   "templating": {
     "list": [
       { "current": { "selected": false, "text": "default", "value": "default" }, "hide": 0, "includeAll": false, "label": "Datasource", "name": "datasource", "options": [], "query": "prometheus", "refresh": 1, "type": "datasource" },
-      { "current": { "selected": false, "text": "All", "value": "$__all" }, "datasource": { "type": "prometheus", "uid": "${datasource}" }, "definition": "label_values(technitium_dns_cluster_node_state, instance)", "hide": 0, "includeAll": true, "label": "Target", "multi": false, "name": "target", "options": [], "query": { "query": "label_values(technitium_dns_cluster_node_state, instance)", "refId": "target_var" }, "refresh": 1, "type": "query" },
-      { "current": { "selected": false, "text": "All", "value": "$__all" }, "datasource": { "type": "prometheus", "uid": "${datasource}" }, "definition": "label_values(technitium_dns_cluster_node_state, job)", "hide": 0, "includeAll": true, "label": "Job", "multi": false, "name": "job", "options": [], "query": { "query": "label_values(technitium_dns_cluster_node_state, job)", "refId": "job_var" }, "refresh": 1, "type": "query" }
+      { "current": { "selected": false, "text": "All", "value": "$__all" }, "datasource": { "type": "prometheus", "uid": "${datasource}" }, "definition": "label_values(technitium_dns_scrape_success, instance)", "hide": 0, "includeAll": true, "label": "Target", "multi": true, "name": "target", "options": [], "query": { "query": "label_values(technitium_dns_scrape_success, instance)", "refId": "target_var" }, "refresh": 1, "type": "query" },
+      { "current": { "selected": false, "text": "All", "value": "$__all" }, "datasource": { "type": "prometheus", "uid": "${datasource}" }, "definition": "label_values(technitium_dns_scrape_success, job)", "hide": 0, "includeAll": true, "label": "Job", "multi": true, "name": "job", "options": [], "query": { "query": "label_values(technitium_dns_scrape_success, job)", "refId": "job_var" }, "refresh": 1, "type": "query" }
     ]
   },
   "time": { "from": "now-1h", "to": "now" },
