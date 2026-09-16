@@ -6,15 +6,14 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-func (c *TechnitiumCollector) collectDHCP(ctx context.Context, ch chan<- prometheus.Metric) {
+func (c *TechnitiumCollector) collectDHCP(ctx context.Context, ch chan<- prometheus.Metric) error {
 	if !c.target.Features.DHCP {
-		return
+		return nil
 	}
 
 	scopes, err := c.client.GetDHCPScopes(ctx)
 	if err != nil {
-		c.logError("failed to get DHCP scopes", err)
-		return
+		return err
 	}
 
 	for _, scope := range scopes {
@@ -23,8 +22,7 @@ func (c *TechnitiumCollector) collectDHCP(ctx context.Context, ch chan<- prometh
 
 	leases, err := c.client.GetDHCPLeases(ctx)
 	if err != nil {
-		c.logError("failed to get DHCP leases", err)
-		return
+		return err
 	}
 
 	leaseCounts := make(map[string]int)
@@ -46,4 +44,6 @@ func (c *TechnitiumCollector) collectDHCP(ctx context.Context, ch chan<- prometh
 			emitGauge(ch, c.descDHCPLeasesByType, float64(count), scope, leaseType)
 		}
 	}
+
+	return nil
 }

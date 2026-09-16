@@ -21,11 +21,20 @@ type TechnitiumCollector struct {
 
 	scrapeTimeoutNanos atomic.Int64
 
-	descs         []*prometheus.Desc
-	subCollectors []func(context.Context, chan<- prometheus.Metric)
+	// counterMu guards the cumulative counter state and the per-collector
+	// error counters, which are updated on every scrape.
+	counterMu       sync.Mutex
+	countersSeeded  bool
+	lastBucket      time.Time
+	cumCounters     map[string]float64
+	collectorErrors map[string]float64
 
-	descScrapeSuccess  *prometheus.Desc
-	descScrapeDuration *prometheus.Desc
+	descs         []*prometheus.Desc
+	subCollectors []subCollector
+
+	descScrapeSuccess   *prometheus.Desc
+	descScrapeDuration  *prometheus.Desc
+	descCollectorErrors *prometheus.Desc
 
 	descQueryTotal     *prometheus.Desc
 	descQueryNoError   *prometheus.Desc
@@ -38,13 +47,13 @@ type TechnitiumCollector struct {
 	descQueryBlocked   *prometheus.Desc
 	descQueryDropped   *prometheus.Desc
 
-	descTotalClients    *prometheus.Desc
-	descCachedEntries   *prometheus.Desc
-	descZones           *prometheus.Desc
-	descAllowedZones    *prometheus.Desc
-	descBlockedZones    *prometheus.Desc
-	descAllowListZones  *prometheus.Desc
-	descBlockListZones  *prometheus.Desc
+	descTotalClients   *prometheus.Desc
+	descCachedEntries  *prometheus.Desc
+	descZones          *prometheus.Desc
+	descAllowedZones   *prometheus.Desc
+	descBlockedZones   *prometheus.Desc
+	descAllowListZones *prometheus.Desc
+	descBlockListZones *prometheus.Desc
 
 	descZoneInfo            *prometheus.Desc
 	descZoneExpiryTimestamp *prometheus.Desc
@@ -55,86 +64,99 @@ type TechnitiumCollector struct {
 	descZoneInternal        *prometheus.Desc
 	descZoneSOASerial       *prometheus.Desc
 
-	descDHCPLeases         *prometheus.Desc
-	descDHCPLeasesByType   *prometheus.Desc
-	descDHCPScopeEnabled   *prometheus.Desc
+	descDHCPLeases       *prometheus.Desc
+	descDHCPLeasesByType *prometheus.Desc
+	descDHCPScopeEnabled *prometheus.Desc
 
-	descClusterNodeState               *prometheus.Desc
-	descHeartbeatInterval              *prometheus.Desc
-	descClusterHeartbeatRetryInterval  *prometheus.Desc
-	descClusterConfigRefreshInterval   *prometheus.Desc
-	descClusterConfigRetryInterval     *prometheus.Desc
-	descClusterConfigLastSynced        *prometheus.Desc
+	descClusterNodeState              *prometheus.Desc
+	descHeartbeatInterval             *prometheus.Desc
+	descClusterHeartbeatRetryInterval *prometheus.Desc
+	descClusterConfigRefreshInterval  *prometheus.Desc
+	descClusterConfigRetryInterval    *prometheus.Desc
+	descClusterConfigLastSynced       *prometheus.Desc
 
-	descCacheMaxEntries           *prometheus.Desc
-	descCacheSaveEnabled          *prometheus.Desc
-	descCacheServeStaleEnabled    *prometheus.Desc
-	descCacheMinRecordTTL         *prometheus.Desc
-	descCacheMaxRecordTTL         *prometheus.Desc
-	descCacheNegativeRecordTTL    *prometheus.Desc
-	descCacheFailureRecordTTL     *prometheus.Desc
-	descCachePrefetchEligibility  *prometheus.Desc
-	descCachePrefetchTrigger      *prometheus.Desc
-	descServeStaleConfig          *prometheus.Desc
-	descBlockingEnabled           *prometheus.Desc
-	descBlockListUpdateInterval   *prometheus.Desc
-	descBlockListNextUpdate       *prometheus.Desc
-	descBlockingType              *prometheus.Desc
-	descBlockingAnswerTTL         *prometheus.Desc
-	descAllowTXTBlockingReport    *prometheus.Desc
-	descForwardersCount           *prometheus.Desc
-	descForwarderInfo             *prometheus.Desc
-	descProtocolEnabled           *prometheus.Desc
-	descProtocolPort              *prometheus.Desc
-	descDefaultTTL                *prometheus.Desc
-	descDNSSECValidationEnabled   *prometheus.Desc
-	descIPv6PreferEnabled         *prometheus.Desc
-	descIPv6Mode                  *prometheus.Desc
-	descRandomizeNameEnabled      *prometheus.Desc
-	descQNameMinimizationEnabled  *prometheus.Desc
-	descEDNSClientSubnetEnabled   *prometheus.Desc
-	descEDNSClientSubnetPrefix    *prometheus.Desc
-	descUDPPayloadSize            *prometheus.Desc
-	descUDPSocketPoolEnabled      *prometheus.Desc
-	descUDPBufferSizeKB           *prometheus.Desc
-	descClientTimeout             *prometheus.Desc
-	descTCPSendTimeout            *prometheus.Desc
-	descTCPReceiveTimeout         *prometheus.Desc
-	descListenBacklog             *prometheus.Desc
-	descMaxConcurrentResolutions  *prometheus.Desc
-	descResolverRetries           *prometheus.Desc
-	descResolverTimeout           *prometheus.Desc
-	descResolverConcurrency       *prometheus.Desc
-	descResolverMaxStackCount     *prometheus.Desc
-	descConcurrentForwarding      *prometheus.Desc
-	descForwarderRetries          *prometheus.Desc
-	descForwarderTimeout          *prometheus.Desc
-	descForwarderConcurrency      *prometheus.Desc
-	descLogEnabled                *prometheus.Desc
-	descLogUseLocalTime           *prometheus.Desc
-	descMaxLogFileDays            *prometheus.Desc
-	descInMemoryStatsEnabled      *prometheus.Desc
-	descMaxStatFileDays           *prometheus.Desc
-	descDNSAppsAutoUpdateEnabled  *prometheus.Desc
-	descWebServiceHTTPPort        *prometheus.Desc
-	descWebServiceTLSEnabled      *prometheus.Desc
-	descWebServiceTLSPort         *prometheus.Desc
-	descQPMLimitSampleMinutes     *prometheus.Desc
-	descQPMLimitUDPTruncationPct  *prometheus.Desc
-	descUptimeSeconds             *prometheus.Desc
-	descVersionInfo               *prometheus.Desc
+	descCacheMaxEntries          *prometheus.Desc
+	descCacheSaveEnabled         *prometheus.Desc
+	descCacheServeStaleEnabled   *prometheus.Desc
+	descCacheMinRecordTTL        *prometheus.Desc
+	descCacheMaxRecordTTL        *prometheus.Desc
+	descCacheNegativeRecordTTL   *prometheus.Desc
+	descCacheFailureRecordTTL    *prometheus.Desc
+	descCachePrefetchEligibility *prometheus.Desc
+	descCachePrefetchTrigger     *prometheus.Desc
+	descServeStaleConfig         *prometheus.Desc
+	descBlockingEnabled          *prometheus.Desc
+	descBlockListUpdateInterval  *prometheus.Desc
+	descBlockListNextUpdate      *prometheus.Desc
+	descBlockingType             *prometheus.Desc
+	descBlockingAnswerTTL        *prometheus.Desc
+	descAllowTXTBlockingReport   *prometheus.Desc
+	descForwardersCount          *prometheus.Desc
+	descForwarderInfo            *prometheus.Desc
+	descProtocolEnabled          *prometheus.Desc
+	descProtocolPort             *prometheus.Desc
+	descDefaultTTL               *prometheus.Desc
+	descDNSSECValidationEnabled  *prometheus.Desc
+	descIPv6PreferEnabled        *prometheus.Desc
+	descIPv6Mode                 *prometheus.Desc
+	descRandomizeNameEnabled     *prometheus.Desc
+	descQNameMinimizationEnabled *prometheus.Desc
+	descEDNSClientSubnetEnabled  *prometheus.Desc
+	descEDNSClientSubnetPrefix   *prometheus.Desc
+	descUDPPayloadSize           *prometheus.Desc
+	descUDPSocketPoolEnabled     *prometheus.Desc
+	descUDPBufferSizeKB          *prometheus.Desc
+	descClientTimeout            *prometheus.Desc
+	descTCPSendTimeout           *prometheus.Desc
+	descTCPReceiveTimeout        *prometheus.Desc
+	descListenBacklog            *prometheus.Desc
+	descMaxConcurrentResolutions *prometheus.Desc
+	descResolverRetries          *prometheus.Desc
+	descResolverTimeout          *prometheus.Desc
+	descResolverConcurrency      *prometheus.Desc
+	descResolverMaxStackCount    *prometheus.Desc
+	descConcurrentForwarding     *prometheus.Desc
+	descForwarderRetries         *prometheus.Desc
+	descForwarderTimeout         *prometheus.Desc
+	descForwarderConcurrency     *prometheus.Desc
+	descLogEnabled               *prometheus.Desc
+	descLogUseLocalTime          *prometheus.Desc
+	descMaxLogFileDays           *prometheus.Desc
+	descInMemoryStatsEnabled     *prometheus.Desc
+	descMaxStatFileDays          *prometheus.Desc
+	descDNSAppsAutoUpdateEnabled *prometheus.Desc
+	descWebServiceHTTPPort       *prometheus.Desc
+	descWebServiceTLSEnabled     *prometheus.Desc
+	descWebServiceTLSPort        *prometheus.Desc
+	descQPMLimitSampleMinutes    *prometheus.Desc
+	descQPMLimitUDPTruncationPct *prometheus.Desc
+	descUptimeSeconds            *prometheus.Desc
+	descVersionInfo              *prometheus.Desc
+}
+
+type subCollector struct {
+	name string
+	fn   func(context.Context, chan<- prometheus.Metric) error
 }
 
 func New(target config.Target, requestTimeout time.Duration, scrapeTimeout time.Duration, logger *slog.Logger) *TechnitiumCollector {
 	apiClient := client.New(target, requestTimeout)
-	labels := target.Labels
+
+	// Copy the target labels instead of mutating the caller's map, otherwise the
+	// added "instance" label leaks back into the shared config on reloads.
+	labels := make(map[string]string, len(target.Labels)+1)
+	for k, v := range target.Labels {
+		labels[k] = v
+	}
 	labels["instance"] = target.Name
 
 	c := &TechnitiumCollector{
-		client:  apiClient,
-		target:  target,
-		logger:  logger,
-		timeout: scrapeTimeout,
+		client:          apiClient,
+		target:          target,
+		logger:          logger,
+		timeout:         scrapeTimeout,
+		cumCounters:     make(map[string]float64, len(queryCounterKeys)),
+		collectorErrors: make(map[string]float64, 5),
 
 		descScrapeSuccess: prometheus.NewDesc(
 			"technitium_dns_scrape_success",
@@ -145,6 +167,11 @@ func New(target config.Target, requestTimeout time.Duration, scrapeTimeout time.
 			"technitium_dns_scrape_duration_seconds",
 			"Duration of the scrape against the target.",
 			nil, labels,
+		),
+		descCollectorErrors: prometheus.NewDesc(
+			"technitium_dns_collector_errors_total",
+			"Total number of failed sub-collector runs per collector.",
+			[]string{"collector"}, labels,
 		),
 
 		descQueryTotal: prometheus.NewDesc(
@@ -609,17 +636,21 @@ func New(target config.Target, requestTimeout time.Duration, scrapeTimeout time.
 		),
 	}
 
-	c.subCollectors = []func(context.Context, chan<- prometheus.Metric){
-		c.collectDashboardStats,
-		c.collectZones,
-		c.collectSettingsStats,
-		c.collectDHCP,
-		c.collectCluster,
+	c.subCollectors = []subCollector{
+		{name: "dashboard", fn: c.collectDashboardStats},
+		{name: "zones", fn: c.collectZones},
+		{name: "settings", fn: c.collectSettingsStats},
+		{name: "dhcp", fn: c.collectDHCP},
+		{name: "cluster", fn: c.collectCluster},
+	}
+	for _, sc := range c.subCollectors {
+		c.collectorErrors[sc.name] = 0
 	}
 
 	c.descs = []*prometheus.Desc{
 		c.descScrapeSuccess,
 		c.descScrapeDuration,
+		c.descCollectorErrors,
 		c.descQueryTotal,
 		c.descQueryNoError,
 		c.descQueryServFail,
@@ -736,31 +767,56 @@ func (c *TechnitiumCollector) Collect(ch chan<- prometheus.Metric) {
 	defer cancel()
 
 	start := time.Now()
-	scrapeSuccess := float64(1)
 
 	var wg sync.WaitGroup
+	errs := make([]error, len(c.subCollectors))
 
-	for _, collect := range c.subCollectors {
+	for i, sc := range c.subCollectors {
 		wg.Add(1)
-		go func(collectFn func(context.Context, chan<- prometheus.Metric)) {
+		go func(i int, sc subCollector) {
 			defer wg.Done()
-			collectFn(ctx, ch)
-		}(collect)
+			if err := sc.fn(ctx, ch); err != nil {
+				errs[i] = err
+			}
+		}(i, sc)
 	}
 
 	wg.Wait()
+
+	scrapeSuccess := float64(1)
+	c.counterMu.Lock()
+	for i, err := range errs {
+		if err != nil {
+			scrapeSuccess = 0
+			c.collectorErrors[c.subCollectors[i].name]++
+			if c.logger != nil {
+				c.logger.Error("sub-collector failed",
+					"target", c.target.Name,
+					"collector", c.subCollectors[i].name,
+					"error", err,
+				)
+			}
+		}
+	}
+	errorCounts := make(map[string]float64, len(c.collectorErrors))
+	for name, count := range c.collectorErrors {
+		errorCounts[name] = count
+	}
+	c.counterMu.Unlock()
 
 	duration := time.Since(start).Seconds()
 
 	ch <- prometheus.MustNewConstMetric(c.descScrapeSuccess, prometheus.GaugeValue, scrapeSuccess)
 	ch <- prometheus.MustNewConstMetric(c.descScrapeDuration, prometheus.GaugeValue, duration)
-}
-
-func (c *TechnitiumCollector) logError(msg string, err error) {
-	c.logger.Error(msg, "target", c.target.Name, "error", err, "errorType", "api_call")
+	for name, count := range errorCounts {
+		ch <- prometheus.MustNewConstMetric(c.descCollectorErrors, prometheus.CounterValue, count, name)
+	}
 }
 
 func (c *TechnitiumCollector) logDebug(msg string, args ...any) {
+	if c.logger == nil {
+		return
+	}
 	allArgs := append([]any{"target", c.target.Name}, args...)
 	c.logger.Debug(msg, allArgs...)
 }

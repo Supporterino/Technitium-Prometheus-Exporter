@@ -96,12 +96,13 @@ func (c *APIClient) doRequest(ctx context.Context, apiPath string, params url.Va
 }
 
 type DashboardStats struct {
-	Stats                   StatsData            `json:"stats"`
-	TopClients              []TopClient          `json:"topClients"`
-	TopDomains              []TopDomain          `json:"topDomains"`
-	TopBlockedDomains       []TopBlockedDomain   `json:"topBlockedDomains"`
-	QueryTypeChartData      ChartData            `json:"queryTypeChartData"`
-	ProtocolTypeChartData   ChartData            `json:"protocolTypeChartData"`
+	Stats                 StatsData          `json:"stats"`
+	MainChartData         ChartData          `json:"mainChartData"`
+	TopClients            []TopClient        `json:"topClients"`
+	TopDomains            []TopDomain        `json:"topDomains"`
+	TopBlockedDomains     []TopBlockedDomain `json:"topBlockedDomains"`
+	QueryTypeChartData    ChartData          `json:"queryTypeChartData"`
+	ProtocolTypeChartData ChartData          `json:"protocolTypeChartData"`
 }
 
 // GetDashboardStats calls /api/dashboard/stats/get?type=LastHour&utc=true
@@ -124,27 +125,27 @@ func (c *APIClient) GetDashboardStats(ctx context.Context) (*DashboardStats, err
 
 // StatsData represents the stats object from /api/dashboard/stats/get
 type StatsData struct {
-	TotalQueries        int64 `json:"totalQueries"`
-	TotalNoError        int64 `json:"totalNoError"`
-	TotalServerFailure  int64 `json:"totalServerFailure"`
-	TotalNxDomain       int64 `json:"totalNxDomain"`
-	TotalRefused        int64 `json:"totalRefused"`
-	TotalAuthoritative  int64 `json:"totalAuthoritative"`
-	TotalRecursive      int64 `json:"totalRecursive"`
-	TotalCached         int64 `json:"totalCached"`
-	TotalBlocked        int64 `json:"totalBlocked"`
-	TotalDropped        int64 `json:"totalDropped"`
-	TotalClients        int64 `json:"totalClients"`
-	Zones               int64 `json:"zones"`
-	CachedEntries       int64 `json:"cachedEntries"`
-	AllowedZones        int64 `json:"allowedZones"`
-	BlockedZones        int64 `json:"blockedZones"`
-	AllowListZones      int64 `json:"allowListZones"`
-	BlockListZones      int64 `json:"blockListZones"`
+	TotalQueries       int64 `json:"totalQueries"`
+	TotalNoError       int64 `json:"totalNoError"`
+	TotalServerFailure int64 `json:"totalServerFailure"`
+	TotalNxDomain      int64 `json:"totalNxDomain"`
+	TotalRefused       int64 `json:"totalRefused"`
+	TotalAuthoritative int64 `json:"totalAuthoritative"`
+	TotalRecursive     int64 `json:"totalRecursive"`
+	TotalCached        int64 `json:"totalCached"`
+	TotalBlocked       int64 `json:"totalBlocked"`
+	TotalDropped       int64 `json:"totalDropped"`
+	TotalClients       int64 `json:"totalClients"`
+	Zones              int64 `json:"zones"`
+	CachedEntries      int64 `json:"cachedEntries"`
+	AllowedZones       int64 `json:"allowedZones"`
+	BlockedZones       int64 `json:"blockedZones"`
+	AllowListZones     int64 `json:"allowListZones"`
+	BlockListZones     int64 `json:"blockListZones"`
 }
 
 type ChartData struct {
-	Labels   []string    `json:"labels"`
+	Labels   []string       `json:"labels"`
 	Datasets []ChartDataset `json:"datasets"`
 }
 
@@ -309,16 +310,16 @@ func (c *APIClient) GetSettings(ctx context.Context) (*DNSSettings, error) {
 
 // ClusterState represents cluster state from /api/admin/cluster/state
 type ClusterState struct {
-	ClusterInitialized             bool          `json:"clusterInitialized"`
-	DNSDomain                      string        `json:"dnsServerDomain"`
-	Version                        string        `json:"version"`
-	ClusterDomain                  string        `json:"clusterDomain"`
-	HeartbeatRefreshInterval       int64         `json:"heartbeatRefreshIntervalSeconds"`
-	HeartbeatRetryInterval         int64         `json:"heartbeatRetryIntervalSeconds"`
-	ConfigRefreshInterval          int64         `json:"configRefreshIntervalSeconds"`
-	ConfigRetryInterval            int64         `json:"configRetryIntervalSeconds"`
-	ConfigLastSynced               string        `json:"configLastSynced"`
-	Nodes                          []ClusterNode `json:"nodes"`
+	ClusterInitialized       bool          `json:"clusterInitialized"`
+	DNSDomain                string        `json:"dnsServerDomain"`
+	Version                  string        `json:"version"`
+	ClusterDomain            string        `json:"clusterDomain"`
+	HeartbeatRefreshInterval int64         `json:"heartbeatRefreshIntervalSeconds"`
+	HeartbeatRetryInterval   int64         `json:"heartbeatRetryIntervalSeconds"`
+	ConfigRefreshInterval    int64         `json:"configRefreshIntervalSeconds"`
+	ConfigRetryInterval      int64         `json:"configRetryIntervalSeconds"`
+	ConfigLastSynced         string        `json:"configLastSynced"`
+	Nodes                    []ClusterNode `json:"nodes"`
 }
 
 type ClusterNode struct {
@@ -331,9 +332,12 @@ type ClusterNode struct {
 	LastSeen  string `json:"lastSeen"`
 }
 
-// GetClusterState calls /api/admin/cluster/state
+// GetClusterState calls /api/admin/cluster/state?includeServerIpAddresses=true
 func (c *APIClient) GetClusterState(ctx context.Context) (*ClusterState, error) {
-	resp, err := c.doRequest(ctx, "/api/admin/cluster/state", nil)
+	params := url.Values{}
+	params.Set("includeServerIpAddresses", "true")
+
+	resp, err := c.doRequest(ctx, "/api/admin/cluster/state", params)
 	if err != nil {
 		return nil, err
 	}
@@ -347,14 +351,14 @@ func (c *APIClient) GetClusterState(ctx context.Context) (*ClusterState, error) 
 
 // Lease represents a DHCP lease from /api/dhcp/leases/list
 type Lease struct {
-	Scope           string `json:"scope"`
-	Type            string `json:"type"`
-	HardwareAddress string `json:"hardwareAddress"`
+	Scope            string `json:"scope"`
+	Type             string `json:"type"`
+	HardwareAddress  string `json:"hardwareAddress"`
 	ClientIdentifier string `json:"clientIdentifier"`
-	Address         string `json:"address"`
-	HostName        string `json:"hostName"`
-	LeaseObtained   string `json:"leaseObtained"`
-	LeaseExpires    string `json:"leaseExpires"`
+	Address          string `json:"address"`
+	HostName         string `json:"hostName"`
+	LeaseObtained    string `json:"leaseObtained"`
+	LeaseExpires     string `json:"leaseExpires"`
 }
 
 // GetDHCPScopes calls /api/dhcp/scopes/list

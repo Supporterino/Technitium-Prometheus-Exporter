@@ -7,19 +7,18 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-func (c *TechnitiumCollector) collectCluster(ctx context.Context, ch chan<- prometheus.Metric) {
+func (c *TechnitiumCollector) collectCluster(ctx context.Context, ch chan<- prometheus.Metric) error {
 	if !c.target.Features.Cluster {
-		return
+		return nil
 	}
 
 	state, err := c.client.GetClusterState(ctx)
 	if err != nil {
-		c.logError("failed to get cluster state", err)
-		return
+		return err
 	}
 
 	if !state.ClusterInitialized {
-		return
+		return nil
 	}
 
 	emitGauge(ch, c.descHeartbeatInterval, float64(state.HeartbeatRefreshInterval))
@@ -33,6 +32,8 @@ func (c *TechnitiumCollector) collectCluster(ctx context.Context, ch chan<- prom
 		}
 	}
 
+	c.logDebug("cluster state", "nodes", len(state.Nodes), "clusterDomain", state.ClusterDomain)
+
 	for _, node := range state.Nodes {
 		stateValue := float64(0)
 		switch node.State {
@@ -40,9 +41,13 @@ func (c *TechnitiumCollector) collectCluster(ctx context.Context, ch chan<- prom
 			stateValue = 1
 		case "Self":
 			stateValue = 2
+		case "Unreachable":
+			stateValue = 3
 		}
 		emitGauge(ch, c.descClusterNodeState, stateValue,
 			node.Name, node.Type, node.IPAddress,
 		)
 	}
+
+	return nil
 }

@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	dto "github.com/prometheus/client_model/go"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/testutil"
+	dto "github.com/prometheus/client_model/go"
 
 	"technitium-dns-exporter/internal/config"
 )
@@ -27,23 +27,23 @@ func newTestServer(t *testing.T) *httptest.Server {
 				"status": "ok",
 				"response": map[string]interface{}{
 					"stats": map[string]interface{}{
-						"totalQueries":        1000,
-						"totalNoError":        800,
-						"totalServerFailure":  5,
-						"totalNxDomain":       100,
-						"totalRefused":        10,
-						"totalAuthoritative":  200,
-						"totalRecursive":      300,
-						"totalCached":         400,
-						"totalBlocked":        50,
-						"totalDropped":        5,
-						"totalClients":        15,
-						"zones":               10,
-						"cachedEntries":       5000,
-						"allowedZones":        5,
-						"blockedZones":        3,
-						"allowListZones":      2,
-						"blockListZones":      1000,
+						"totalQueries":       1000,
+						"totalNoError":       800,
+						"totalServerFailure": 5,
+						"totalNxDomain":      100,
+						"totalRefused":       10,
+						"totalAuthoritative": 200,
+						"totalRecursive":     300,
+						"totalCached":        400,
+						"totalBlocked":       50,
+						"totalDropped":       5,
+						"totalClients":       15,
+						"zones":              10,
+						"cachedEntries":      5000,
+						"allowedZones":       5,
+						"blockedZones":       3,
+						"allowListZones":     2,
+						"blockListZones":     1000,
 					},
 				},
 			}
@@ -165,7 +165,7 @@ func newTestServer(t *testing.T) *httptest.Server {
 					"dnsOverHttpPort":                  80,
 					"dnsOverQuicPort":                  853,
 					"qpmLimitSampleMinutes":            5,
-					"qpmLimitUdpTruncationPercentage": 90,
+					"qpmLimitUdpTruncationPercentage":  90,
 				},
 			}
 			json.NewEncoder(w).Encode(resp)
@@ -203,25 +203,25 @@ func newTestServer(t *testing.T) *httptest.Server {
 				"response": map[string]interface{}{
 					"leases": []interface{}{
 						map[string]interface{}{
-							"scope":         "LAN",
-							"type":          "Dynamic",
+							"scope":           "LAN",
+							"type":            "Dynamic",
 							"hardwareAddress": "00:11:22:33:44:55",
-							"address":       "192.168.1.100",
-							"hostName":      "client1",
+							"address":         "192.168.1.100",
+							"hostName":        "client1",
 						},
 						map[string]interface{}{
-							"scope":         "LAN",
-							"type":          "Reserved",
+							"scope":           "LAN",
+							"type":            "Reserved",
 							"hardwareAddress": "00:11:22:33:44:66",
-							"address":       "192.168.1.101",
-							"hostName":      "client2",
+							"address":         "192.168.1.101",
+							"hostName":        "client2",
 						},
 						map[string]interface{}{
-							"scope":         "Guest",
-							"type":          "Dynamic",
+							"scope":           "Guest",
+							"type":            "Dynamic",
 							"hardwareAddress": "00:11:22:33:44:77",
-							"address":       "10.0.0.100",
-							"hostName":      "client3",
+							"address":         "10.0.0.100",
+							"hostName":        "client3",
 						},
 					},
 				},
@@ -266,7 +266,7 @@ func newTestServer(t *testing.T) *httptest.Server {
 		}
 
 		resp := map[string]interface{}{
-			"status": "ok",
+			"status":   "ok",
 			"response": map[string]interface{}{},
 		}
 		json.NewEncoder(w).Encode(resp)
@@ -789,20 +789,36 @@ func TestCollectorAPIErrorResponses(t *testing.T) {
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(c)
 
-	// Should not panic; scrapeSuccess remains 1 despite API errors
+	// All sub-collectors fail, so scrape_success must be 0 and the per-collector
+	// error counter must be present.
 	metrics, err := registry.Gather()
 	if err != nil {
 		t.Fatalf("failed to gather: %v", err)
 	}
 
+	foundSuccess := false
+	foundErrors := false
 	for _, mf := range metrics {
-		if mf.GetName() == "technitium_dns_scrape_success" {
+		switch mf.GetName() {
+		case "technitium_dns_scrape_success":
+			foundSuccess = true
 			for _, m := range mf.Metric {
-				if m.GetGauge().GetValue() != 1 {
-					t.Error("scrape_success must be 1 even when API returns errors")
+				if m.GetGauge().GetValue() != 0 {
+					t.Error("scrape_success must be 0 when API returns errors")
 				}
 			}
+		case "technitium_dns_collector_errors_total":
+			foundErrors = true
+			if len(mf.Metric) == 0 {
+				t.Error("expected collector error counters")
+			}
 		}
+	}
+	if !foundSuccess {
+		t.Error("technitium_dns_scrape_success not found")
+	}
+	if !foundErrors {
+		t.Error("technitium_dns_collector_errors_total not found")
 	}
 }
 
@@ -880,8 +896,8 @@ func TestCollectorMalformedJSON(t *testing.T) {
 	for _, mf := range metrics {
 		if mf.GetName() == "technitium_dns_scrape_success" {
 			for _, m := range mf.Metric {
-				if m.GetGauge().GetValue() != 1 {
-					t.Error("scrape_success must be 1 even with malformed JSON")
+				if m.GetGauge().GetValue() != 0 {
+					t.Error("scrape_success must be 0 with malformed JSON")
 				}
 			}
 		}

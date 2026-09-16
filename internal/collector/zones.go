@@ -7,11 +7,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-func (c *TechnitiumCollector) collectZones(ctx context.Context, ch chan<- prometheus.Metric) {
+func (c *TechnitiumCollector) collectZones(ctx context.Context, ch chan<- prometheus.Metric) error {
 	zones, err := c.client.GetZones(ctx)
 	if err != nil {
-		c.logError("failed to get zones", err)
-		return
+		return err
 	}
 
 	for _, zone := range zones {
@@ -51,4 +50,6 @@ func (c *TechnitiumCollector) collectZones(ctx context.Context, ch chan<- promet
 			}
 		}
 	}
+
+	return nil
 }

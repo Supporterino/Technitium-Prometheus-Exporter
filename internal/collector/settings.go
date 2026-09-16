@@ -15,11 +15,10 @@ func boolToFloat(b bool) float64 {
 	return 0
 }
 
-func (c *TechnitiumCollector) collectSettingsStats(ctx context.Context, ch chan<- prometheus.Metric) {
+func (c *TechnitiumCollector) collectSettingsStats(ctx context.Context, ch chan<- prometheus.Metric) error {
 	settings, err := c.client.GetSettings(ctx)
 	if err != nil {
-		c.logError("failed to get settings", err)
-		return
+		return err
 	}
 
 	emitGauge(ch, c.descCacheMaxEntries, float64(settings.CacheMaximumEntries))
@@ -147,4 +146,6 @@ func (c *TechnitiumCollector) collectSettingsStats(ctx context.Context, ch chan<
 			emitGauge(ch, c.descUptimeSeconds, time.Since(uptime).Seconds())
 		}
 	}
+
+	return nil
 }
