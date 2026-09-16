@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.1.0](https://github.com/Supporterino/Technitium-Prometheus-Exporter/compare/v1.0.6...v1.1.0) (2026-09-16)
+
+
+### Features
+
+* ✨ Add per-target request_timeout config option ([c68ff3a](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/c68ff3a5cdca44237bf126c5e3d19e3f7f21c32f))
+* **helm:** ✨ Allow annotations on Grafana dashboard ConfigMaps ([8cddcfb](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/8cddcfb81d5a44a519f8ea8d17deec291da132d7))
+
+
+### Bug Fixes
+
+* :bug: add release please config ([6d34305](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/6d3430581cbb8575a947ca7b81a86f24dd498adf))
+* :bug: add release please config ([018da53](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/018da53b0eae763e308f6bc75cbb5d97b875b0fe))
+* 🐛 Add per-request HTTP timeout and increase connection pool to prevent scrape deadline exceeded ([d7c10e2](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/d7c10e2c90d1b2b64059a0c5a9c195424fe1eb41))
+* 🐛 Prevent duplicate label name panic on cluster node metric ([ad556ec](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/ad556ec743877b62f6dcb995bcb6109eb312b5c3))
+* **collector:** 🐛 Make query counters cumulative and report failures ([02868b4](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/02868b4ae5e22c77974bf566ffb84c66bbf534bb))
+* **collector:** 🐛 Remove incorrect per-request timeout division for concurrent sub-collectors ([130d2d1](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/130d2d1d4ae562bcd9bf541af863af18a664efaf))
+* **dashboards:** 🐛 Avoid double counting across cluster targets ([77bcfd8](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/77bcfd87675b097db773352e6061c6a5c3881c68))
+* **helm:** 🐛 Split securityContext into pod-level and container-level contexts ([799dd27](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/799dd27f8b08ac3ec24a38362a21904aa7acbc8b))
+* **helm:** 🐛 Split securityContext into pod-level and container-level… ([0cfb4bb](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/0cfb4bbe8ab7b0269cac76be86baf80a1c191773))
+
 ## [1.0.6](https://github.com/Supporterino/Technitium-Prometheus-Exporter/compare/v1.0.5...v1.0.6) (2026-05-28)
 
 
