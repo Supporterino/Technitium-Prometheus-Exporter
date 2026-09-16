@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.2.0](https://github.com/Supporterino/Technitium-Prometheus-Exporter/compare/v1.1.1...v1.2.0) (2026-09-16)
+
+
+### Features
+
+* **helm:** ✨ Allow annotations on Grafana dashboard ConfigMaps ([8cddcfb](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/8cddcfb81d5a44a519f8ea8d17deec291da132d7))
+
+
+### Bug Fixes
+
+* **ci:** 🐛 Sync release-please manifest to latest released tag ([2992ad8](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/2992ad867717de95631681e68004b3b053ba95b8))
+* **collector:** 🐛 Make query counters cumulative and report failures ([02868b4](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/02868b4ae5e22c77974bf566ffb84c66bbf534bb))
+* **dashboards:** 🐛 Avoid double counting across cluster targets ([77bcfd8](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/77bcfd87675b097db773352e6061c6a5c3881c68))
+
 ## [1.1.0](https://github.com/Supporterino/Technitium-Prometheus-Exporter/compare/v1.0.6...v1.1.0) (2026-09-16)
 
 
