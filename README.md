@@ -8,6 +8,7 @@ Prometheus exporter for [Technitium DNS Server](https://technitium.com/dns/). Co
 |--------|------|--------|-------------|
 | `technitium_dns_scrape_success` | Gauge | instance, job | Whether the scrape was successful (1) or failed (0) |
 | `technitium_dns_scrape_duration_seconds` | Gauge | instance, job | Duration of the scrape |
+| `technitium_dns_collector_errors_total` | Counter | instance, job, collector | Failed sub-collector runs per collector |
 | `technitium_dns_queries_total` | Counter | instance, job | Total DNS queries |
 | `technitium_dns_queries_noerror_total` | Counter | instance, job | Queries with NOERROR |
 | `technitium_dns_queries_servfail_total` | Counter | instance, job | Queries with SERVFAIL |
@@ -37,8 +38,12 @@ Prometheus exporter for [Technitium DNS Server](https://technitium.com/dns/). Co
 | `technitium_dns_forwarder_info` | Gauge | instance, job, address, protocol | Forwarder details |
 | `technitium_dns_dhcp_leases_count` | Gauge | instance, job, scope | DHCP leases per scope |
 | `technitium_dns_dhcp_scope_enabled` | Gauge | instance, job, scope | DHCP scope enabled |
-| `technitium_dns_cluster_node_state` | Gauge | instance, job, node, node_type, ip_address | Cluster node state |
+| `technitium_dns_cluster_node_state` | Gauge | instance, job, cluster_node, cluster_node_type, cluster_ip_address | Cluster node state |
 | `technitium_dns_cluster_heartbeat_interval_seconds` | Gauge | instance, job | Heartbeat interval |
+
+> **Query counters:** The Technitium dashboard API only reports totals for a rolling window, so the exporter accumulates them into true Prometheus counters. `technitium_dns_queries_total` is derived exactly from the per-minute buckets returned by the API; the RCODE/type breakdowns are attributed the proportional share of that delta and are therefore approximate. Counters reset to the current window total when the exporter restarts.
+
+> **`technitium_dns_scrape_success`:** `1` only when every sub-collector succeeded; `0` when any sub-collector failed. Use `technitium_dns_collector_errors_total{collector="..."}` to see which domain is failing.
 
 ## Quick Start (Local)
 

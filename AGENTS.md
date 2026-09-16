@@ -43,8 +43,9 @@ make compose-down # tear down local stack
 ## Collector conventions
 
 - Metric descriptors are defined in the `New()` constructor and cached on the struct. **Exception**: `cache_max_entries`, `cache_save_enabled`, `cache_serve_stale_enabled` create `prometheus.NewDesc` inline inside `collectCacheStats` — avoid adding more inline descriptors; follow the constructor pattern.
-- `instance` label auto-set to `target.Name` in the constructor (not from config labels).
-- `scrapeSuccess` is hardcoded to `1` regardless of sub-collector failures — partial failures log errors but don't flip the success gauge.
+- `instance` label auto-set to `target.Name` in the constructor (not from config labels). The constructor copies the target label map — do not mutate `target.Labels` directly.
+- `scrape_success` is `1` only when every sub-collector returns no error, otherwise `0`. Per-collector failure counts are exposed as `technitium_dns_collector_errors_total{collector=...}`.
+- Query `*_total` metrics are accumulated across scrapes into real counters: `queries_total` is exact (from `mainChartData` per-minute buckets), the RCODE/type breakdowns are attributed the proportional share of that delta. Counter state is guarded by `counterMu`.
 
 ## Deploy
 
