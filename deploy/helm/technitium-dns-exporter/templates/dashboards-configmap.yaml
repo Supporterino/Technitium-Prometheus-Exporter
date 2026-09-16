@@ -10,6 +10,10 @@ metadata:
   labels:
     {{- include "technitium-dns-exporter.labels" $ | nindent 4 }}
     {{ $.Values.grafana.dashboards.label }}: {{ $.Values.grafana.dashboards.labelValue | quote }}
+  {{- with $.Values.grafana.dashboards.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 data:
   {{ base $path }}: |
     {{- $content | toString | nindent 4 }}

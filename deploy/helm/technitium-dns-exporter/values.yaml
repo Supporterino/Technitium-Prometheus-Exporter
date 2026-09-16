@@ -28,6 +28,7 @@ grafana:
     enabled: false
     label: grafana_dashboard
     labelValue: "1"
+    annotations: {}
 
 resources: {}
 nodeSelector: {}
