@@ -50,6 +50,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
 
+      - uses: azure/setup-helm@v4
+        with:
+          # Pin Helm instead of relying on the runner's preinstalled version.
+          # The ubuntu-latest image once shipped 3.18.0, whose `helm push`
+          # regression (helm/helm#30881, fixed in 3.18.1) broke GHCR pushes.
+          version: v3.19.5
+
       - name: Package and push Helm chart
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
@@ -67,6 +74,6 @@ jobs:
 
           helm push "${CHART_TGZ}" "oci://ghcr.io/${OWNER}"
 
-          gh release upload "${GITHUB_REF_NAME}" "${CHART_TGZ}"
+          gh release upload "${GITHUB_REF_NAME}" "${CHART_TGZ}" --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

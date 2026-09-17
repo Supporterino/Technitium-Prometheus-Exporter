@@ -1,5 +1,11 @@
 version: 2
 
+release:
+  # Re-running the release workflow must not fail when the artifacts from a
+  # previous attempt are already attached to the release: on a 422
+  # already_exists GoReleaser deletes the stale asset and retries the upload.
+  replace_existing_artifacts: true
+
 builds:
   - id: exporter
     main: ./cmd/exporter
