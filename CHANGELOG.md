@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/Supporterino/Technitium-Prometheus-Exporter/compare/v1.2.1...v1.2.2) (2026-09-17)
+
+
+### Bug Fixes
+
+* **ci:** 🐛 Pin Helm and make release workflow re-runnable ([9d8fc7c](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/9d8fc7c4693ce7b325f75ecd091f6560e1deabb5))
+
 ## [1.2.1](https://github.com/Supporterino/Technitium-Prometheus-Exporter/compare/v1.2.0...v1.2.1) (2026-09-17)
 
 
