@@ -150,9 +150,11 @@ type ChartData struct {
 }
 
 type ChartDataset struct {
-	Data            []int64  `json:"data"`
-	Label           string   `json:"label"`
-	BackgroundColor []string `json:"backgroundColor,omitempty"`
+	Data  []int64 `json:"data"`
+	Label string  `json:"label"`
+	// BackgroundColor is a JSON string in mainChartData but an array in
+	// queryTypeChartData/protocolTypeChartData, so it stays raw.
+	BackgroundColor json.RawMessage `json:"backgroundColor,omitempty"`
 }
 
 type TopClient struct {

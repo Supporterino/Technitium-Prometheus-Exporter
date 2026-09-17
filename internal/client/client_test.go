@@ -40,6 +40,20 @@ func newClientTestServer(t *testing.T) *httptest.Server {
 			json.NewEncoder(w).Encode(map[string]interface{}{
 				"status": "ok",
 				"response": map[string]interface{}{
+					"mainChartData": map[string]interface{}{
+						"labelFormat": "HH:mm",
+						"labels":      []string{"2024-02-04T10:38:00.0000000Z"},
+						"datasets": []interface{}{
+							map[string]interface{}{
+								"label":           "Total",
+								"backgroundColor": "rgba(102, 153, 255, 0.1)",
+								"borderColor":     "rgb(102, 153, 255)",
+								"borderWidth":     2,
+								"fill":            true,
+								"data":            []int64{4},
+							},
+						},
+					},
 					"stats": map[string]interface{}{
 						"totalQueries":      1000,
 						"totalNoError":      800,
@@ -366,6 +380,12 @@ func TestGetDashboardStats(t *testing.T) {
 	}
 	if stats.Stats.TotalQueries != 1000 {
 		t.Errorf("expected TotalQueries=1000, got %d", stats.Stats.TotalQueries)
+	}
+	if len(stats.MainChartData.Datasets) != 1 || len(stats.MainChartData.Datasets[0].Data) != 1 {
+		t.Fatalf("expected mainChartData with one dataset of one point, got %+v", stats.MainChartData)
+	}
+	if got := stats.MainChartData.Datasets[0].Data[0]; got != 4 {
+		t.Errorf("expected first mainChartData point 4, got %d", got)
 	}
 }
 
