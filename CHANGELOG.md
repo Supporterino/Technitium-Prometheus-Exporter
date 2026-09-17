@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/Supporterino/Technitium-Prometheus-Exporter/compare/v1.2.0...v1.2.1) (2026-09-17)
+
+
+### Bug Fixes
+
+* **client:** 🐛 Accept string backgroundColor in dashboard chart data ([3c2b309](https://github.com/Supporterino/Technitium-Prometheus-Exporter/commit/3c2b3098850ba789fed4c44c810611dd498c0105))
+
 ## [1.2.0](https://github.com/Supporterino/Technitium-Prometheus-Exporter/compare/v1.1.1...v1.2.0) (2026-09-16)
 
 
